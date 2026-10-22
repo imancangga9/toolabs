@@ -1,0 +1,260 @@
+---
+import type { Locale } from '../../config';
+import { getUi } from '../../i18n/ui';
+import { formatDate } from '../../i18n/format';
+import {
+  categories,
+  categoryPath,
+  getRelatedTools,
+  getToolsByCategory,
+  toolPath,
+  type Tool,
+} from '../../tools.config';
+import {
+  breadcrumbSchema,
+  faqSchema,
+  howToSchema,
+  toolApplicationSchema,
+} from '../../lib/seo';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Icon from '../Icon.astro';
+import ToolRunner from '../react/ToolRunner';
+
+interface Props {
+  locale: Locale;
+  tool: Tool;
+}
+
+const { locale, tool } = Astro.props;
+const ui = getUi(locale);
+const content = tool.locale[locale];
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = toolPath(tool, locale);
+const alternatePath = toolPath(tool, locale === 'en' ? 'id' : 'en');
+const canonicalUrl = new URL(canonicalPath, origin).toString();
+const homePath = locale === 'en' ? '/' : '/id/';
+const categoryHref = categoryPath(tool.category, locale);
+const related = getRelatedTools(tool);
+const categoryTools = getToolsByCategory(tool.category).filter((item) => item.id !== tool.id);
+const privacyHref = locale === 'en' ? '/privacy' : '/id/privasi';
+const guideHref = locale === 'en' ? '/guides' : '/id/panduan';
+
+const breadcrumbs = [
+  { name: ui.common.home, href: homePath },
+  { name: categories[tool.category].name[locale], href: categoryHref },
+  { name: tool.locale[locale].h1, href: canonicalPath },
+];
+
+const schemas = [
+  toolApplicationSchema(tool, locale, origin, canonicalUrl),
+  howToSchema(tool, locale, canonicalUrl),
+  faqSchema(content.faq),
+  breadcrumbSchema(
+    breadcrumbs.map((item) => ({
+      name: item.name,
+      url: new URL(item.href, origin).toString(),
+    })),
+  ),
+];
+---
+
+<Base
+  locale={locale}
+  title={content.title}
+  description={content.metaDescription}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage={`/og/${tool.id}.png`}
+  jsonLd={schemas}
+  bodyClass="tool-page-body"
+>
+  <div class="tool-page">
+    <div class="container">
+      <Breadcrumbs label="Breadcrumb" items={breadcrumbs} />
+
+      <div class="tool-layout">
+        <div class="tool-main">
+          <header class="tool-head">
+            <div class="page-head-meta">
+              <span class="category-chip">{categories[tool.category].name[locale]}</span>
+              <span>·</span>
+              <span>{ui.common.free}</span>
+              <span>·</span>
+              <span>{ui.common.noSignup}</span>
+            </div>
+            <h1>{content.h1}</h1>
+            <p class="lead">{content.intro}</p>
+            <ul class="tool-badges">
+              <li><Icon name="shield" size={14} />{ui.common.private}</li>
+              <li><Icon name="bolt" size={14} />{ui.common.browserOnly}</li>
+              <li><Icon name="lock" size={14} />{ui.common.noSignup}</li>
+            </ul>
+          </header>
+
+          <ToolRunner
+            client:load
+            locale={locale}
+            toolId={tool.id}
+            engine={tool.engine}
+            accept={tool.accept}
+            maxFileMB={100}
+            sortable={tool.sortable ?? false}
+            defaults={tool.options}
+          />
+
+          <div class="tool-content">
+            <section class="answer-box" id="answer">
+              <h2 class="answer-question">{content.answerQuestion}</h2>
+              <p>{content.shortAnswer}</p>
+            </section>
+
+            <section class="content-section" id="how-to">
+              <h2>{ui.tool.howTo}</h2>
+              <ol class="steps">
+                {content.steps.map((step) => <li>{step}</li>)}
+              </ol>
+            </section>
+
+            <section class="content-section">
+              <h2>{ui.tool.why}</h2>
+              <div class="benefit-grid">
+                {content.benefits.map((benefit) => (
+                  <div class="benefit">
+                    <Icon name="check" size={17} />
+                    <p>{benefit}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section class="content-section">
+              <h2>{ui.tool.when}</h2>
+              <ul class="use-case-list">
+                {content.useCases.map((useCase) => (
+                  <li><Icon name="arrow-right" size={15} /><span>{useCase}</span></li>
+                ))}
+              </ul>
+            </section>
+
+            {content.comparison && (
+              <section class="content-section">
+                <h2>{ui.tool.comparison}</h2>
+                <div class="comparison-wrap">
+                  <table>
+                    <caption>{content.comparison.caption}</caption>
+                    <thead>
+                      <tr>{content.comparison.headers.map((header) => <th scope="col">{header}</th>)}</tr>
+                    </thead>
+                    <tbody>
+                      {content.comparison.rows.map((row) => (
+                        <tr>{row.map((cell) => <td>{cell}</td>)}</tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {content.comparison.note && <p class="table-note">{content.comparison.note}</p>}
+              </section>
+            )}
+
+            {content.tip && (
+              <section class="content-section">
+                <div class="callout">
+                  <Icon name="info" size={18} />
+                  <div>
+                    <strong>{ui.tool.tips}</strong>
+                    <p>{content.tip}</p>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section class="content-section" id="faq">
+              <h2>{ui.common.faq}</h2>
+              <div class="faq-list">
+                {content.faq.map((faq) => (
+                  <details class="faq-item">
+                    <summary>{faq.q}</summary>
+                    <div><p>{faq.a}</p></div>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            <section class="content-section">
+              <h2>{ui.tool.relatedTitle}</h2>
+              <p>{ui.tool.relatedBody}</p>
+              <div class="related-grid">
+                {related.map((item) => (
+                  <a
+                    class="related-link"
+                    href={toolPath(item, locale)}
+                    data-track-related={item.id}
+                  >
+                    <span class="mega-icon"><Icon name={item.icon} size={18} /></span>
+                    <span>
+                      <strong>{item.locale[locale].h1}</strong>
+                      <small>{item.locale[locale].metaDescription}</small>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            <div class="author-box">
+              <span class="author-avatar">TA</span>
+              <div>
+                <p><strong>{ui.tool.writtenBy}</strong></p>
+                <p>{ui.tool.privacyBody}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="tool-sidebar">
+          <div class="side-card privacy-card">
+            <div class="privacy-card-head">
+              <Icon name="shield" size={18} />
+              <h2>{ui.tool.privacyTitle}</h2>
+            </div>
+            <p>{ui.tool.privacyBody}</p>
+            <a href={privacyHref}>{ui.common.learnMore} <Icon name="arrow-right" size={14} /></a>
+          </div>
+
+          <div class="side-card">
+            <h2>{ui.tool.relatedTitle}</h2>
+            <ul>
+              {related.slice(0, 5).map((item) => (
+                <li><a href={toolPath(item, locale)}>{item.locale[locale].h1}</a></li>
+              ))}
+            </ul>
+          </div>
+
+          {categoryTools.length > 0 && (
+            <div class="side-card">
+              <h2>{categories[tool.category].name[locale]}</h2>
+              <ul>
+                {categoryTools.slice(0, 5).map((item) => (
+                  <li><a href={toolPath(item, locale)}>{item.locale[locale].h1}</a></li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div class="side-card">
+            <h2>{ui.common.guides}</h2>
+            <p>{locale === 'en'
+              ? 'Understand file size, quality, and privacy before you process a document.'
+              : 'Pahami ukuran file, kualitas, dan privasi sebelum memproses dokumen.'}</p>
+            <a href={guideHref}>{ui.nav.guides} <Icon name="arrow-right" size={14} /></a>
+          </div>
+
+          <div class="updated-row">
+            <span class="dot" aria-hidden="true"></span>
+            <span>{ui.tool.updatedLabel}: <time datetime={tool.updatedAt}>{formatDate(tool.updatedAt, locale)}</time></span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</Base>

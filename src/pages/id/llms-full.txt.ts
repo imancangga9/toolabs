@@ -1,0 +1,12 @@
+import type { APIRoute } from 'astro';
+import { buildLlmsFull } from '../../lib/llms';
+
+export const GET: APIRoute = ({ site }) => {
+  const origin = site?.origin ?? 'https://toolabs.com';
+  return new Response(buildLlmsFull('id', origin), {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+    },
+  });
+};

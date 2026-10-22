@@ -1,0 +1,152 @@
+---
+import type { Locale } from '../../config';
+import { getUi } from '../../i18n/ui';
+import {
+  categories,
+  categoryPath,
+  getToolsByCategory,
+  type Category,
+} from '../../tools.config';
+import { breadcrumbSchema, categorySchema, faqSchema } from '../../lib/seo';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import ToolCard from '../ToolCard.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  locale: Locale;
+  category: Category;
+}
+
+const { locale, category } = Astro.props;
+const ui = getUi(locale);
+const hub = categories[category].hub[locale];
+const categoryTools = getToolsByCategory(category);
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = categoryPath(category, locale);
+const alternatePath = categoryPath(category, locale === 'en' ? 'id' : 'en');
+const homePath = locale === 'en' ? '/' : '/id/';
+const canonicalUrl = new URL(canonicalPath, origin).toString();
+const privacyHref = locale === 'en' ? '/privacy' : '/id/privasi';
+const guideHref = locale === 'en' ? '/guides' : '/id/panduan';
+
+const breadcrumbs = [
+  { name: ui.common.home, href: homePath },
+  { name: categories[category].name[locale], href: canonicalPath },
+];
+
+const relatedCategories = (['image', 'pdf', 'convert'] as const).filter((item) => item !== category);
+const schemas = [
+  categorySchema(
+    category,
+    locale,
+    origin,
+    canonicalUrl,
+    categoryTools.map((tool) => ({
+      name: tool.locale[locale].h1,
+      url: new URL(locale === 'en' ? `/${tool.slug.en}` : `/id/${tool.slug.id}`, origin).toString(),
+      description: tool.locale[locale].metaDescription,
+    })),
+  ),
+  breadcrumbSchema(breadcrumbs.map((item) => ({ name: item.name, url: new URL(item.href, origin).toString() }))),
+  faqSchema(hub.faq),
+];
+---
+
+<Base
+  locale={locale}
+  title={hub.title}
+  description={hub.metaDescription}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage={`/og/category-${category}.png`}
+  jsonLd={schemas}
+>
+  <div class="page-head">
+    <div class="container">
+      <Breadcrumbs label="Breadcrumb" items={breadcrumbs} />
+      <div class="page-head-meta">
+        <span class="category-chip">{ui.category.count.replace('{n}', String(categoryTools.length))}</span>
+        <span>·</span>
+        <span>{ui.common.browserOnly}</span>
+      </div>
+      <h1>{hub.h1}</h1>
+      <p class="lead">{hub.intro[0]}</p>
+    </div>
+  </div>
+
+  <section class="home-section" style="padding-top: 8px;">
+    <div class="container">
+      <div class="tool-grid">
+        {categoryTools.map((tool) => <ToolCard tool={tool} locale={locale} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container narrow">
+      <div class="callout">
+        <Icon name="shield" size={19} />
+        <div>
+          <strong>{ui.tool.privacyTitle}</strong>
+          <p>{ui.tool.privacyBody} <a href={privacyHref}>{ui.common.learnMore}</a></p>
+        </div>
+      </div>
+      <div class="prose" style="margin-top: 24px;">
+        {hub.intro.slice(1).map((paragraph) => <p>{paragraph}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container narrow">
+      <div class="section-head">
+        <div>
+          <h2>{ui.common.faq}</h2>
+        </div>
+      </div>
+      <div class="faq-list">
+        {hub.faq.map((faq) => (
+          <details class="faq-item">
+            <summary>{faq.q}</summary>
+            <div><p>{faq.a}</p></div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>{ui.common.related}</h2>
+        </div>
+      </div>
+      <div class="category-grid compact">
+        {relatedCategories.map((item) => (
+          <a class="category-card" href={categoryPath(item, locale)} data-category={item}>
+            <span class="category-card-icon" data-category={item}>
+              <Icon name={categories[item].icon} size={24} />
+            </span>
+            <span class="category-card-body">
+              <strong>{categories[item].name[locale]}</strong>
+              <small>{categories[item].hub[locale].intro[0].split('. ')[0]}.</small>
+            </span>
+            <span class="category-card-arrow"><Icon name="arrow-right" size={18} /></span>
+          </a>
+        ))}
+        <a class="category-card" href={guideHref} data-category="guide">
+          <span class="category-card-icon" data-category="guide">
+            <Icon name="book" size={24} />
+          </span>
+          <span class="category-card-body">
+            <strong>{ui.common.guides}</strong>
+            <small>{locale === 'en' ? 'Practical explanations of formats, size limits, and privacy.' : 'Penjelasan praktis tentang format, batas ukuran, dan privasi.'}</small>
+          </span>
+          <span class="category-card-arrow"><Icon name="arrow-right" size={18} /></span>
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>

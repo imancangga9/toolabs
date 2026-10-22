@@ -1,0 +1,172 @@
+---
+import type { Locale } from '../../config';
+import { getUi } from '../../i18n/ui';
+import { formatDate } from '../../i18n/format';
+import {
+  getGuides,
+  guidePath,
+  guidesIndexPath,
+  type Guide,
+} from '../../content/guides';
+import { getTool, toolPath } from '../../tools.config';
+import { articleSchema, breadcrumbSchema, faqSchema } from '../../lib/seo';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  locale: Locale;
+  guide: Guide;
+}
+
+const { locale, guide } = Astro.props;
+const ui = getUi(locale);
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = guidePath(guide, locale);
+const alternatePath = locale === 'en'
+  ? `/id/panduan/${guide.slug.id}`
+  : `/guides/${guide.slug.en}`;
+const canonicalUrl = new URL(canonicalPath, origin).toString();
+const homePath = locale === 'en' ? '/' : '/id/';
+const indexHref = guidesIndexPath(locale);
+const related = guide.relatedTools.map((id) => getTool(id));
+
+const breadcrumbs = [
+  { name: ui.common.home, href: homePath },
+  { name: ui.common.guides, href: indexHref },
+  { name: guide.h1, href: canonicalPath },
+];
+
+const schemas = [
+  articleSchema({
+    headline: guide.h1,
+    description: guide.metaDescription,
+    url: canonicalUrl,
+    locale,
+    datePublished: guide.updatedAt,
+    dateModified: guide.updatedAt,
+  }),
+  faqSchema(guide.faq),
+  breadcrumbSchema(
+    breadcrumbs.map((item) => ({
+      name: item.name,
+      url: new URL(item.href, origin).toString(),
+    })),
+  ),
+];
+---
+
+<Base
+  locale={locale}
+  title={`${guide.title} — Toolabs`}
+  description={guide.metaDescription}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage={`/og/guide-${guide.id}.png`}
+  ogType="article"
+  jsonLd={schemas}
+>
+  <div class="article-page">
+    <div class="container">
+      <Breadcrumbs label="Breadcrumb" items={breadcrumbs} />
+      <div class="article-layout">
+        <article>
+          <header class="article-header">
+            <span class="eyebrow"><span class="eyebrow-dot"></span>{ui.common.guides}</span>
+            <h1>{guide.h1}</h1>
+            <p class="lead">{guide.excerpt}</p>
+            <div class="article-meta">
+              <span>{ui.common.updated}: <time datetime={guide.updatedAt}>{formatDate(guide.updatedAt, locale)}</time></span>
+              <span>{guide.readingMinutes} {ui.common.minRead}</span>
+              <span>{ui.tool.writtenBy}</span>
+            </div>
+          </header>
+
+          <div class="article-body">
+            <div class="answer-box">
+              <span class="eyebrow"><span class="eyebrow-dot"></span>{ui.tool.quickAnswer}</span>
+              <p>{guide.quickAnswer}</p>
+            </div>
+
+            <section class="content-section">
+              <h2>{locale === 'en' ? 'Key takeaways' : 'Poin utama'}</h2>
+              <ul>
+                {guide.keyTakeaways.map((item) => <li>{item}</li>)}
+              </ul>
+            </section>
+
+            {guide.blocks.map((block) => (
+              <section class="content-section">
+                {block.heading && <h2>{block.heading}</h2>}
+                {block.paragraphs?.map((paragraph) => <p>{paragraph}</p>)}
+                {block.bullets && (
+                  block.ordered ? (
+                    <ol>{block.bullets.map((item) => <li>{item}</li>)}</ol>
+                  ) : (
+                    <ul>{block.bullets.map((item) => <li>{item}</li>)}</ul>
+                  )
+                )}
+              </section>
+            ))}
+
+            <section class="content-section">
+              <h2>{ui.common.faq}</h2>
+              <div class="faq-list">
+                {guide.faq.map((faq) => (
+                  <details class="faq-item">
+                    <summary>{faq.q}</summary>
+                    <div><p>{faq.a}</p></div>
+                  </details>
+                ))}
+              </div>
+            </section>
+
+            <section class="content-section">
+              <h2>{ui.tool.relatedTitle}</h2>
+              <div class="related-grid">
+                {related.map((tool) => (
+                  <a class="related-link" href={toolPath(tool, locale)} data-track-related={tool.id}>
+                    <span class="mega-icon"><Icon name={tool.icon} size={18} /></span>
+                    <span>
+                      <strong>{tool.locale[locale].h1}</strong>
+                      <small>{tool.locale[locale].metaDescription}</small>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            <div class="author-box">
+              <span class="author-avatar">TA</span>
+              <div>
+                <p><strong>{ui.tool.writtenBy}</strong></p>
+                <p>{ui.tool.privacyBody}</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <aside class="article-side">
+          <div class="side-card">
+            <h2>{locale === 'en' ? 'Try it now' : 'Coba sekarang'}</h2>
+            <p>{locale === 'en'
+              ? 'Open the matching tool and keep the file on your device.'
+              : 'Buka tool yang sesuai dan biarkan file tetap di perangkat Anda.'}</p>
+            <a class="button small" href={toolPath(related[0], locale)}>
+              {related[0].locale[locale].h1} <Icon name="arrow-right" size={14} />
+            </a>
+          </div>
+          <div class="side-card">
+            <h2>{ui.common.guides}</h2>
+            <ul>
+              {getGuides(locale).filter((item) => item.id !== guide.id).map((item) => (
+                <li><a href={guidePath(item, locale)}>{item.h1}</a></li>
+              ))}
+              <li><a href={indexHref}>{locale === 'en' ? 'All guides' : 'Semua panduan'}</a></li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</Base>

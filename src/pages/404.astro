@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { getFeaturedTools } from '../tools.config';
+
+const featured = getFeaturedTools().slice(0, 4);
+---
+
+<Base
+  locale="en"
+  title="Page not found — Toolabs"
+  description="The page you requested does not exist. Browse the free image and PDF tools instead."
+  canonicalPath="/404"
+  noindex
+>
+  <section class="page-head">
+    <div class="container narrow">
+      <span class="eyebrow"><span class="eyebrow-dot"></span>404</span>
+      <h1>That page is not here</h1>
+      <p class="lead">
+        The link may be old, mistyped, or the tool may have moved. The file tools are still one click away.
+      </p>
+      <div class="hero-actions">
+        <a class="button" href="/">Back to home <Icon name="arrow-right" size={16} /></a>
+        <a class="button secondary" href="/#tools">Browse all tools</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="section-head">
+        <div><h2>Popular tools</h2></div>
+      </div>
+      <div class="tool-grid">
+        {featured.map((tool) => <ToolCard tool={tool} locale="en" />)}
+      </div>
+      <p style="margin-top: 22px; color: var(--muted);">
+        Halaman ini juga tersedia dalam bahasa Indonesia di <a href="/id/">Toolabs versi Indonesia</a>.
+      </p>
+    </div>
+  </section>
+</Base>

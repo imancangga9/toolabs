@@ -1,0 +1,125 @@
+---
+import type { Locale } from '../../config';
+import { getUi } from '../../i18n/ui';
+import { getGuides, guidePath, guidesIndexPath } from '../../content/guides';
+import { breadcrumbSchema } from '../../lib/seo';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const ui = getUi(locale);
+const guides = getGuides(locale);
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = guidesIndexPath(locale);
+const alternatePath = guidesIndexPath(locale === 'en' ? 'id' : 'en');
+const homePath = locale === 'en' ? '/' : '/id/';
+const allTools = locale === 'en' ? '/#tools' : '/id/#tools';
+const canonicalUrl = new URL(canonicalPath, origin).toString();
+
+const content = locale === 'en'
+  ? {
+      title: 'File Guides — Image Size, PDF Privacy, and Formats',
+      h1: 'Guides for people who need a file to work',
+      metaDescription:
+        'Practical guides to image compression, target file sizes, PDF merging, and browser-based privacy. Clear explanations, no jargon walls.',
+      intro:
+        'A file problem is usually a deadline problem. These guides explain what to change, what to check, and which trade-offs are worth making — without pretending every image can be 20 KB and still look perfect.',
+      eyebrow: 'Toolabs guides',
+      ctaTitle: 'Need the tool instead?',
+      ctaBody: 'The library has focused tools for images, PDFs, and format conversion. Every one runs locally.',
+      ctaButton: 'Open the tools',
+      relatedLabel: 'Popular tools',
+    }
+  : {
+      title: 'Panduan File — Ukuran Gambar, Privasi PDF, dan Format',
+      h1: 'Panduan untuk orang yang butuh file-nya berhasil',
+      metaDescription:
+        'Panduan praktis kompresi gambar, target ukuran file, penggabungan PDF, dan privasi berbasis browser. Penjelasan jelas, tanpa istilah berbelit.',
+      intro:
+        'Masalah file biasanya adalah masalah tenggat. Panduan ini menjelaskan apa yang perlu diubah, apa yang harus diperiksa, dan trade-off mana yang layak diambil — tanpa berpura-pura setiap gambar bisa menjadi 20 KB dan tetap sempurna.',
+      eyebrow: 'Panduan Toolabs',
+      ctaTitle: 'Butuh tool-nya langsung?',
+      ctaBody: 'Koleksi ini berisi tool fokus untuk gambar, PDF, dan konversi format. Semuanya berjalan lokal.',
+      ctaButton: 'Buka tool',
+      relatedLabel: 'Tool populer',
+    };
+
+const breadcrumbs = [
+  { name: ui.common.home, href: homePath },
+  { name: ui.common.guides, href: canonicalPath },
+];
+
+const schemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: content.title,
+    description: content.metaDescription,
+    url: canonicalUrl,
+    inLanguage: locale === 'id' ? 'id-ID' : 'en',
+    isPartOf: { '@id': `${origin}/#website` },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: guides.map((guide, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: guide.h1,
+        url: new URL(guidePath(guide, locale), origin).toString(),
+      })),
+    },
+  },
+  breadcrumbSchema(
+    breadcrumbs.map((item) => ({
+      name: item.name,
+      url: new URL(item.href, origin).toString(),
+    })),
+  ),
+];
+---
+
+<Base
+  locale={locale}
+  title={content.title}
+  description={content.metaDescription}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage="/og/guides.png"
+  jsonLd={schemas}
+>
+  <div class="page-head">
+    <div class="container">
+      <Breadcrumbs label="Breadcrumb" items={breadcrumbs} />
+      <span class="eyebrow"><span class="eyebrow-dot"></span>{content.eyebrow}</span>
+      <h1>{content.h1}</h1>
+      <p class="lead">{content.intro}</p>
+    </div>
+  </div>
+
+  <section class="home-section" style="padding-top: 6px;">
+    <div class="container narrow">
+      <div class="guide-grid">
+        {guides.map((guide) => (
+          <a class="guide-card" href={guidePath(guide, locale)}>
+            <span class="guide-card-meta">{guide.updatedAt} · {guide.readingMinutes} {ui.common.minRead}</span>
+            <h2>{guide.h1}</h2>
+            <p>{guide.excerpt}</p>
+            <span class="guide-card-link">{ui.common.learnMore} <Icon name="arrow-right" size={15} /></span>
+          </a>
+        ))}
+      </div>
+
+      <div class="cta-band" style="margin-top: 34px;">
+        <div>
+          <h2>{content.ctaTitle}</h2>
+          <p>{content.ctaBody}</p>
+        </div>
+        <a class="button" href={allTools}>{content.ctaButton} <Icon name="arrow-right" size={16} /></a>
+      </div>
+    </div>
+  </section>
+</Base>

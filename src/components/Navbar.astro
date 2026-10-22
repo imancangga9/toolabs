@@ -1,0 +1,391 @@
+---
+import type { Locale } from '../config';
+import { getUi } from '../i18n/ui';
+import { categories, categoryPath, getToolsByCategory, type Category } from '../tools.config';
+import { toolDisplayName } from '../lib/display';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  alternatePath?: string;
+}
+
+const { locale, alternatePath } = Astro.props;
+const ui = getUi(locale);
+const home = locale === 'en' ? '/' : '/id/';
+const allTools = `${home}#tools`;
+const guides = locale === 'en' ? '/guides' : '/id/panduan';
+const otherLocale = locale === 'en' ? 'id' : 'en';
+const languageHref = alternatePath ?? (locale === 'en' ? '/id/' : '/');
+const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
+---
+
+<header class="site-header">
+  <div class="container nav-bar">
+    <a class="brand" href={home} aria-label={`${ui.nav.home} — Toolabs`}>
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 5h12v3h-4.5v11h-3V8H6z" fill="currentColor"></path>
+          <circle cx="18.3" cy="17.8" r="2.7" fill="#3bbd9a"></circle>
+        </svg>
+      </span>
+      <span class="brand-word">Tool<span>abs</span></span>
+    </a>
+
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="site-nav"
+      aria-label={ui.nav.openMenu}
+      data-nav-toggle
+    >
+      <Icon name="menu" size={21} />
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label={ui.nav.menu}>
+      <ul class="nav-links">
+        <li class="nav-item">
+          <a class="nav-link" href={allTools}>{ui.nav.allTools}</a>
+        </li>
+        {categoryKeys.map((category) => {
+          const cat = categories[category];
+          const catTools = getToolsByCategory(category)
+            .slice()
+            .sort((a, b) => (a.featured ?? 99) - (b.featured ?? 99))
+            .slice(0, 4);
+          return (
+            <li class="nav-item" data-nav-item>
+              <a class="nav-link" href={categoryPath(category, locale)}>{cat.name[locale]}</a>
+              <button
+                class="mega-toggle"
+                type="button"
+                aria-expanded="false"
+                aria-label={`${ui.common.openTool}: ${cat.name[locale]}`}
+                data-mega-toggle
+              >
+                <Icon name="chevron-down" size={14} />
+              </button>
+              <div class="mega" data-mega>
+                <div class="mega-header">
+                  <span class="mega-kicker">{ui.nav.featured} · {cat.name[locale]}</span>
+                  <a class="mega-all" href={categoryPath(category, locale)}>{ui.nav.viewAll} →</a>
+                </div>
+                <div class="mega-grid">
+                  {catTools.map((tool) => (
+                    <a class="mega-link" href={locale === 'en' ? `/${tool.slug.en}` : `/id/${tool.slug.id}`}>
+                      <span class="mega-icon"><Icon name={tool.icon} size={17} /></span>
+                      <span class="mega-copy">
+                        <strong>{toolDisplayName(tool, locale)}</strong>
+                        <small>{tool.locale[locale].metaDescription.slice(0, 78)}…</small>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </li>
+          );
+        })}
+        <li class="nav-item">
+          <a class="nav-link" href={guides}>{ui.nav.guides}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={locale === 'en' ? '/about' : '/id/tentang'}>{ui.nav.about}</a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="search-button" type="button" data-search-open aria-label={ui.search.label}>
+          <Icon name="search" size={17} />
+          <span>{ui.search.placeholder}</span>
+          <kbd aria-hidden="true">/</kbd>
+        </button>
+        <a
+          class="lang-switch"
+          href={languageHref}
+          hreflang={otherLocale}
+          lang={otherLocale}
+          aria-label={`${ui.common.switchLanguage}: ${otherLocale === 'id' ? 'Bahasa Indonesia' : 'English'}`}
+          data-lang-switch={otherLocale}
+        >
+          <Icon name="globe" size={16} />
+          {otherLocale === 'id' ? 'ID' : 'EN'}
+        </a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<dialog class="search-dialog" id="tool-search" aria-labelledby="tool-search-title">
+  <div class="search-dialog-inner">
+    <form method="dialog">
+      <div class="search-dialog-head">
+        <Icon name="search" size={20} />
+        <label class="sr-only" for="tool-search-input" id="tool-search-title">{ui.search.label}</label>
+        <input
+          id="tool-search-input"
+          type="search"
+          autocomplete="off"
+          placeholder={ui.search.placeholder}
+          aria-describedby="tool-search-hint"
+        />
+        <button class="icon-button" type="submit" aria-label={ui.search.close}>
+          <Icon name="close" size={19} />
+        </button>
+      </div>
+    </form>
+    <div class="sr-only" id="tool-search-hint">{ui.search.hint}</div>
+    <ul class="search-results" id="tool-search-results" aria-live="polite"></ul>
+    <div class="search-hint">
+      <span>{ui.search.hint}</span>
+      <span><kbd>Esc</kbd> {ui.nav.close}</span>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  const locale = document.documentElement.lang === 'id' ? 'id' : 'en';
+
+  // Mobile navigation
+  const navToggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+  const nav = document.getElementById('site-nav');
+  navToggle?.addEventListener('click', () => {
+    const open = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', String(!open));
+    nav?.classList.toggle('is-open', !open);
+  });
+
+  // Mega menu toggles (keyboard/touch; CSS handles hover on desktop)
+  const items = Array.from(document.querySelectorAll<HTMLElement>('[data-nav-item]'));
+  for (const item of items) {
+    const toggle = item.querySelector<HTMLButtonElement>('[data-mega-toggle]');
+    toggle?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const willOpen = !item.classList.contains('is-open');
+      for (const other of items) {
+        other.classList.remove('is-open');
+        other.querySelector('[data-mega-toggle]')?.setAttribute('aria-expanded', 'false');
+      }
+      item.classList.toggle('is-open', willOpen);
+      toggle.setAttribute('aria-expanded', String(willOpen));
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!(event.target as Element).closest('[data-nav-item]')) {
+      for (const item of items) {
+        item.classList.remove('is-open');
+        item.querySelector('[data-mega-toggle]')?.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      for (const item of items) {
+        item.classList.remove('is-open');
+        item.querySelector('[data-mega-toggle]')?.setAttribute('aria-expanded', 'false');
+      }
+      if (nav?.classList.contains('is-open')) {
+        nav.classList.remove('is-open');
+        navToggle?.setAttribute('aria-expanded', 'false');
+        navToggle?.focus();
+      }
+    }
+  });
+
+  // Remember the language choice (no automatic redirect, per the product spec)
+  document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((link) => {
+    link.addEventListener('click', () => {
+      try {
+        localStorage.setItem('toolabs-lang', link.dataset.langSwitch || '');
+      } catch {
+        // Storage may be blocked; the link still works.
+      }
+    });
+  });
+
+  // Search
+  type SearchTool = {
+    id: string;
+    category: 'image' | 'pdf' | 'convert';
+    title: Record<'en' | 'id', string>;
+    path: Record<'en' | 'id', string>;
+    keywords: Record<'en' | 'id', string[]>;
+  };
+  type SearchData = { tools: SearchTool[]; categoryNames: Record<string, Record<string, string>> };
+
+  const dialog = document.getElementById('tool-search') as HTMLDialogElement | null;
+  const openButton = document.querySelector<HTMLButtonElement>('[data-search-open]');
+  const input = document.getElementById('tool-search-input') as HTMLInputElement | null;
+  const results = document.getElementById('tool-search-results');
+  let searchData: SearchData | null = null;
+  let loadPromise: Promise<SearchData> | null = null;
+  const ui = {
+    empty: "No tools match your search.",
+    loading: 'Loading tools…',
+    shortcut: 'Type a tool name, format, or task.',
+  };
+  const localeUi =
+    locale === 'id'
+      ? {
+          empty: 'Tidak ada tool untuk pencarian itu. Coba “kompres”, “PDF”, atau “HEIC”.',
+          loading: 'Memuat tool…',
+        }
+      : ui;
+
+  function loadIndex(): Promise<SearchData> {
+    if (searchData) return Promise.resolve(searchData);
+    if (!loadPromise) {
+      loadPromise = fetch('/search-index.json')
+        .then((response) => {
+          if (!response.ok) throw new Error('search index unavailable');
+          return response.json() as Promise<SearchData>;
+        })
+        .then((data) => {
+          searchData = data;
+          return data;
+        });
+    }
+    return loadPromise;
+  }
+
+  function score(tool: SearchTool, query: string): number {
+    const title = tool.title[locale].toLowerCase();
+    const words = tool.keywords[locale].join(' ');
+    const haystack = `${title} ${words} ${tool.category}`.toLowerCase();
+    const q = query.toLowerCase().trim();
+    if (!q) return 1;
+    if (title === q) return 100;
+    if (title.startsWith(q)) return 80;
+    if (title.includes(q)) return 60 - Math.min(20, title.indexOf(q));
+    const tokens = q.split(/\s+/).filter(Boolean);
+    let total = 0;
+    for (const token of tokens) {
+      if (!haystack.includes(token)) {
+        // Subsequence fallback for misspellings such as "compres".
+        let cursor = 0;
+        let matched = 0;
+        for (const character of haystack) {
+          if (character === token[cursor]) {
+            cursor += 1;
+            matched += 1;
+            if (cursor >= token.length) break;
+          }
+        }
+        if (matched < token.length) return 0;
+        total += 8;
+      } else {
+        total += 18;
+      }
+    }
+    return total;
+  }
+
+  function render(query: string): void {
+    if (!results) return;
+    results.replaceChildren();
+    const data = searchData;
+    if (!data) {
+      const li = document.createElement('li');
+      li.className = 'search-empty';
+      li.textContent = localeUi.loading;
+      results.append(li);
+      return;
+    }
+
+    const matches = data.tools
+      .map((tool) => ({ tool, score: score(tool, query) }))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8);
+
+    if (!matches.length) {
+      const li = document.createElement('li');
+      li.className = 'search-empty';
+      li.textContent = localeUi.empty;
+      results.append(li);
+      return;
+    }
+
+    for (const { tool } of matches) {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.className = 'search-result';
+      link.href = tool.path[locale];
+      const icon = document.createElement('span');
+      icon.className = 'search-result-icon';
+      icon.textContent = tool.category === 'image' ? 'IMG' : tool.category === 'pdf' ? 'PDF' : 'CVT';
+      const copy = document.createElement('span');
+      const strong = document.createElement('strong');
+      strong.textContent = tool.title[locale];
+      const small = document.createElement('small');
+      small.textContent = data.categoryNames[tool.category]?.[locale] ?? tool.category;
+      copy.append(strong, small);
+      link.append(icon, copy);
+      li.append(link);
+      results.append(li);
+    }
+  }
+
+  async function openSearch(): Promise<void> {
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    document.body.classList.add('has-dialog');
+    input?.focus();
+    render(input?.value ?? '');
+    try {
+      await loadIndex();
+      render(input?.value ?? '');
+    } catch {
+      if (results) {
+        const li = document.createElement('li');
+        li.className = 'search-empty';
+        li.textContent = localeUi.empty;
+        results.replaceChildren(li);
+      }
+    }
+  }
+
+  openButton?.addEventListener('click', () => {
+    void openSearch();
+  });
+
+  input?.addEventListener('input', () => render(input.value));
+  input?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      const first = results?.querySelector<HTMLAnchorElement>('a[href]');
+      if (first) {
+        event.preventDefault();
+        first.click();
+      }
+    }
+    if (event.key === 'ArrowDown') {
+      const first = results?.querySelector<HTMLAnchorElement>('a[href]');
+      if (first) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
+  dialog?.addEventListener('close', () => {
+    document.body.classList.remove('has-dialog');
+  });
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const target = event.target as HTMLElement;
+    const typing =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement ||
+      target.isContentEditable;
+    if (event.key === '/' && !typing && !dialog?.open) {
+      event.preventDefault();
+      void openSearch();
+    }
+  });
+</script>

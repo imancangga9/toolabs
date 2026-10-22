@@ -1,0 +1,108 @@
+---
+import type { Locale } from '../../config';
+import { siteConfig } from '../../config';
+import { getUi } from '../../i18n/ui';
+import { formatDate } from '../../i18n/format';
+import { getStaticPage, staticPagePaths, type StaticPageKey } from '../../content/static-pages';
+import { breadcrumbSchema } from '../../lib/seo';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../Breadcrumbs.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  locale: Locale;
+  pageKey: StaticPageKey;
+}
+
+const { locale, pageKey } = Astro.props;
+const ui = getUi(locale);
+const page = getStaticPage(pageKey, locale);
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = staticPagePaths[pageKey][locale];
+const alternatePath = staticPagePaths[pageKey][locale === 'en' ? 'id' : 'en'];
+const homePath = locale === 'en' ? '/' : '/id/';
+const canonicalUrl = new URL(canonicalPath, origin).toString();
+
+const breadcrumbs = [
+  { name: ui.common.home, href: homePath },
+  { name: page.h1, href: canonicalPath },
+];
+
+const pageSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: page.title,
+  description: page.metaDescription,
+  url: canonicalUrl,
+  inLanguage: locale === 'id' ? 'id-ID' : 'en',
+  dateModified: page.updatedAt,
+  isPartOf: { '@id': `${origin}/#website` },
+};
+const schemas = [
+  pageSchema,
+  breadcrumbSchema(breadcrumbs.map((item) => ({ name: item.name, url: new URL(item.href, origin).toString() }))),
+];
+---
+
+<Base
+  locale={locale}
+  title={page.title}
+  description={page.metaDescription}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage={`/og/${pageKey}.png`}
+  jsonLd={schemas}
+>
+  <div class="article-page">
+    <div class="container">
+      <Breadcrumbs label={locale === 'id' ? 'Remah roti' : 'Breadcrumb'} items={breadcrumbs} />
+      <header class="article-header">
+        <h1>{page.h1}</h1>
+        <p class="lead">{page.intro}</p>
+        <div class="article-meta">
+          <span>{page.updatedAt ? `${ui.static.lastUpdated}: ${formatDate(page.updatedAt, locale)}` : ''}</span>
+          <span>{ui.tool.writtenBy}</span>
+        </div>
+      </header>
+
+      {pageKey === 'contact' && (
+        <a class="contact-card" href={`mailto:${siteConfig.contactEmail}`}>
+          <span class="contact-card-icon"><Icon name="mail" size={22} /></span>
+          <span>
+            <strong>{siteConfig.contactEmail}</strong>
+            <small>{locale === 'en' ? 'Email is the best way to reach the team.' : 'Email adalah cara terbaik menghubungi tim.'}</small>
+          </span>
+          <Icon name="arrow-right" size={18} />
+        </a>
+      )}
+
+      <div class="article-body">
+        {page.blocks.map((block) => (
+          <section class="content-section">
+            <h2>{block.heading}</h2>
+            {block.paragraphs?.map((paragraph) => <p>{paragraph}</p>)}
+            {block.bullets && (
+              <ul>
+                {block.bullets.map((item) => <li>{item}</li>)}
+              </ul>
+            )}
+            {block.table && (
+              <div class="comparison-wrap">
+                <table>
+                  <thead>
+                    <tr>{block.table.headers.map((header) => <th scope="col">{header}</th>)}</tr>
+                  </thead>
+                  <tbody>
+                    {block.table.rows.map((row) => (
+                      <tr>{row.map((cell) => <td>{cell}</td>)}</tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</Base>

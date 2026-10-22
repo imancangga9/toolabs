@@ -1,0 +1,31 @@
+{
+  "name": "toolabs",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Toolabs — free, privacy-first file converters and compressors that run in your browser.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "og": "node scripts/generate-og.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^7.1.0",
+    "astro": "^7.4.1",
+    "fflate": "^0.8.3",
+    "heic2any": "^0.0.4",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.4.299",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.11",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "sharp": "^0.35.5",
+    "typescript": "^6.0.3"
+  }
+}

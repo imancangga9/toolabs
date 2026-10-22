@@ -1,0 +1,441 @@
+---
+import type { Locale } from '../../config';
+import { getUi } from '../../i18n/ui';
+import { categories, categoryPath, getToolsByCategory, tools, toolPath } from '../../tools.config';
+import { faqSchema } from '../../lib/seo';
+import { getGuides, guidePath, guidesIndexPath } from '../../content/guides';
+import Base from '../../layouts/Base.astro';
+import ToolCard from '../ToolCard.astro';
+import Icon from '../Icon.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const ui = getUi(locale);
+const guides = getGuides(locale);
+const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const canonicalPath = locale === 'en' ? '/' : '/id/';
+const alternatePath = locale === 'en' ? '/id/' : '/';
+const guideHref = guidesIndexPath(locale);
+
+const content = locale === 'en'
+  ? {
+      title: 'Toolabs — Free Private Image & PDF Tools in Your Browser',
+      description:
+        'Compress images to an exact size, merge PDFs, and convert HEIC, JPG, PNG, or WebP. Free tools that run locally in your browser. No uploads, no signup.',
+      eyebrow: 'Private by design · Free to use',
+      heroTitle: 'File tools that never <em>upload your files</em>',
+      heroLead:
+        'Compress an image to an exact size, merge PDFs, or convert HEIC — all inside your browser. No signup, no queue, and no copy of your document on someone else’s server.',
+      primaryCta: 'Browse the tools',
+      secondaryCta: 'How it works',
+      trust: ['Files stay on your device', 'No account required', 'Works offline after loading'],
+      visualLabel: 'Local session',
+      visualBadge: '0 uploads',
+      visualFile: 'application-photo.jpg',
+      visualBefore: '2.4 MB',
+      visualAfter: '198 KB',
+      visualTarget: 'Target size',
+      visualTargetValue: '200 KB',
+      visualFoot: 'Processed on this device',
+      visualFootRight: 'No server copy',
+      libraryEyebrow: 'The library',
+      libraryTitle: 'Everyday file jobs, without the upload',
+      libraryBody:
+        'Fifteen focused tools for images and PDFs. Pick a task, adjust the options, and download the result. The file never leaves your browser.',
+      libraryAll: 'All tools',
+      categoryTitle: 'Browse by file type',
+      categoryBody: 'Start with the kind of file you have. Each category page compares the tools and explains the trade-offs.',
+      categoryCta: 'Explore',
+      howEyebrow: 'How it works',
+      howTitle: 'Three steps. Nothing leaves your device.',
+      howBody:
+        'The browser does the work that a server usually does. That is why there is no upload bar, no queue, and no account.',
+      steps: [
+        {
+          title: 'Choose a tool',
+          body: 'Open a tool from the library. Each page explains the format limits, the options, and what the result will look like.',
+        },
+        {
+          title: 'Add your files',
+          body: 'Drag, drop, or paste. The browser reads the file locally. You can process several images or PDFs in one batch.',
+        },
+        {
+          title: 'Download the result',
+          body: 'Check the before and after sizes, then download one file or a ZIP. Closing the tab releases the working data.',
+        },
+      ],
+      privacyTitle: 'A local tool, not a promise',
+      privacyBody:
+        'You do not have to take our word for it. Load a tool, disconnect from the internet, and process a small file. If it works, the processing is happening on your device.',
+      privacyCta: 'Read the privacy policy',
+      guidesEyebrow: 'Guides',
+      guidesTitle: 'Understand the trade-offs before you compress',
+      guidesBody: 'Practical explanations of file size, quality, formats, and privacy — written for people who need a result, not a lecture.',
+      guidesCta: 'All guides',
+      faqTitle: 'Questions people ask first',
+      ctaTitle: 'Ready to process a file?',
+      ctaBody: 'Pick a tool, keep the file on your device, and get a result you can check before you download.',
+      ctaButton: 'Open all tools',
+      stats: [
+        { value: '15', label: 'focused tools' },
+        { value: '0', label: 'file uploads' },
+        { value: '2', label: 'languages' },
+      ],
+      homeFaq: [
+        {
+          q: 'Are my files uploaded to Toolabs?',
+          a: 'No. Images and PDFs are read and processed by your browser. The site has no upload endpoint for user files. You can verify this by disconnecting from the internet after the page loads and processing a small file.',
+        },
+        {
+          q: 'Is Toolabs really free?',
+          a: 'Yes. Every tool on the site is free to use without an account. There is no watermark, no trial limit, and no paywall on the current tools. If advertising is added later, it will not change how files are processed.',
+        },
+        {
+          q: 'Do I need to install software?',
+          a: 'No. Toolabs runs in a modern browser on Windows, macOS, Linux, Android, and iPhone. No extension, desktop app, or signup is required. Older browsers may lack the Web Worker or Canvas features some tools need.',
+        },
+        {
+          q: 'How large can my files be?',
+          a: 'The interface accepts files up to 100 MB, but the practical limit depends on your device memory. A large PDF may work on a desktop and struggle on an older phone. A warning appears for unusually large files.',
+        },
+        {
+          q: 'Can I use Toolabs on my phone?',
+          a: 'Yes. The tools are responsive and work with the mobile file picker. Image compression and small PDF merges usually work well. For very large PDFs or batches of high-resolution photos, a desktop browser is more reliable.',
+        },
+        {
+          q: 'What happens to my files when I close the tab?',
+          a: 'The browser releases the working data when the tab is closed or reloaded. Toolabs does not keep a copy because the file was never sent to a server. Download any result you want to keep before closing the page.',
+        },
+      ],
+    }
+  : {
+      title: 'Toolabs — Tool Gambar & PDF Gratis di Browser',
+      description:
+        'Kompres gambar ke ukuran tertentu, gabung PDF, dan konversi HEIC, JPG, PNG, atau WebP. Tool gratis yang berjalan lokal di browser. Tanpa upload, tanpa daftar.',
+      eyebrow: 'Privat sejak awal · Gratis',
+      heroTitle: 'Tool file yang tidak pernah <em>mengunggah file Anda</em>',
+      heroLead:
+        'Kompres gambar ke ukuran tertentu, gabungkan PDF, atau konversi HEIC — semuanya di browser Anda. Tanpa daftar, tanpa antrean, dan tanpa salinan dokumen di server orang lain.',
+      primaryCta: 'Lihat semua tool',
+      secondaryCta: 'Cara kerjanya',
+      trust: ['File tetap di perangkat', 'Tanpa akun', 'Bekerja offline setelah dimuat'],
+      visualLabel: 'Sesi lokal',
+      visualBadge: '0 unggahan',
+      visualFile: 'foto-lamaran.jpg',
+      visualBefore: '2,4 MB',
+      visualAfter: '198 KB',
+      visualTarget: 'Target ukuran',
+      visualTargetValue: '200 KB',
+      visualFoot: 'Diproses di perangkat ini',
+      visualFootRight: 'Tanpa salinan server',
+      libraryEyebrow: 'Koleksi tool',
+      libraryTitle: 'Pekerjaan file sehari-hari, tanpa unggah',
+      libraryBody:
+        'Lima belas tool fokus untuk gambar dan PDF. Pilih tugas, atur opsi, lalu unduh hasilnya. File tidak pernah meninggalkan browser Anda.',
+      libraryAll: 'Semua tool',
+      categoryTitle: 'Jelajahi berdasarkan jenis file',
+      categoryBody: 'Mulai dari jenis file yang Anda punya. Setiap halaman kategori membandingkan tool dan menjelaskan konsekuensinya.',
+      categoryCta: 'Jelajahi',
+      howEyebrow: 'Cara kerjanya',
+      howTitle: 'Tiga langkah. Tidak ada yang meninggalkan perangkat.',
+      howBody:
+        'Browser mengerjakan tugas yang biasanya dilakukan server. Karena itu tidak ada bilah unggah, antrean, atau akun.',
+      steps: [
+        {
+          title: 'Pilih tool',
+          body: 'Buka tool dari koleksi. Setiap halaman menjelaskan batas format, opsi, dan gambaran hasilnya.',
+        },
+        {
+          title: 'Tambahkan file',
+          body: 'Tarik, lepas, atau tempel. Browser membaca file secara lokal. Anda bisa memproses beberapa gambar atau PDF sekaligus.',
+        },
+        {
+          title: 'Unduh hasil',
+          body: 'Periksa ukuran sebelum dan sesudah, lalu unduh satu file atau ZIP. Menutup tab melepaskan data kerja.',
+        },
+      ],
+      privacyTitle: 'Tool lokal, bukan sekadar janji',
+      privacyBody:
+        'Anda tidak perlu percaya begitu saja. Muat tool, putuskan koneksi internet, lalu proses file kecil. Jika berhasil, pemrosesan memang terjadi di perangkat Anda.',
+      privacyCta: 'Baca kebijakan privasi',
+      guidesEyebrow: 'Panduan',
+      guidesTitle: 'Pahami konsekuensinya sebelum mengompres',
+      guidesBody: 'Penjelasan praktis tentang ukuran file, kualitas, format, dan privasi — untuk orang yang butuh hasil, bukan ceramah.',
+      guidesCta: 'Semua panduan',
+      faqTitle: 'Pertanyaan yang paling sering muncul',
+      ctaTitle: 'Siap memproses file?',
+      ctaBody: 'Pilih tool, biarkan file tetap di perangkat Anda, dan periksa hasilnya sebelum mengunduh.',
+      ctaButton: 'Buka semua tool',
+      stats: [
+        { value: '15', label: 'tool fokus' },
+        { value: '0', label: 'unggahan file' },
+        { value: '2', label: 'bahasa' },
+      ],
+      homeFaq: [
+        {
+          q: 'Apakah file saya diunggah ke Toolabs?',
+          a: 'Tidak. Gambar dan PDF dibaca serta diproses oleh browser Anda. Situs tidak memiliki endpoint unggahan untuk file pengguna. Anda bisa memastikannya dengan memutus koneksi internet setelah halaman dimuat, lalu memproses file kecil.',
+        },
+        {
+          q: 'Apakah Toolabs benar-benar gratis?',
+          a: 'Ya. Semua tool di situs ini gratis tanpa akun. Tidak ada watermark, batas percobaan, atau paywall pada tool yang tersedia. Jika iklan ditambahkan nanti, iklan tidak akan mengubah cara file diproses.',
+        },
+        {
+          q: 'Apakah perlu menginstal software?',
+          a: 'Tidak. Toolabs berjalan di browser modern pada Windows, macOS, Linux, Android, dan iPhone. Tidak perlu ekstensi, aplikasi desktop, atau pendaftaran. Browser lama mungkin tidak mendukung Web Worker atau Canvas yang dibutuhkan sebagian tool.',
+        },
+        {
+          q: 'Seberapa besar file yang diterima?',
+          a: 'Antarmuka menerima file hingga 100 MB, tetapi batas praktisnya bergantung pada memori perangkat. PDF besar mungkin berhasil di desktop dan lambat di ponsel lama. Peringatan muncul untuk file yang sangat besar.',
+        },
+        {
+          q: 'Bisakah Toolabs dipakai di ponsel?',
+          a: 'Bisa. Tool responsif dan bekerja dengan pemilih file ponsel. Kompresi gambar dan penggabungan PDF kecil biasanya lancar. Untuk PDF sangat besar atau banyak foto resolusi tinggi, browser desktop lebih andal.',
+        },
+        {
+          q: 'Apa yang terjadi pada file saat tab ditutup?',
+          a: 'Browser melepaskan data kerja saat tab ditutup atau dimuat ulang. Toolabs tidak menyimpan salinan karena file tidak pernah dikirim ke server. Unduh hasil yang ingin disimpan sebelum menutup halaman.',
+        },
+      ],
+    };
+
+const categoryKeys = ['image', 'pdf', 'convert'] as const;
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: content.title,
+  description: content.description,
+  url: new URL(canonicalPath, origin).toString(),
+  inLanguage: locale === 'id' ? 'id-ID' : 'en',
+  isPartOf: { '@id': `${origin}/#website` },
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: tools.map((tool, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: tool.locale[locale].h1,
+      url: new URL(toolPath(tool, locale), origin).toString(),
+    })),
+  },
+};
+const schemas = [itemList, faqSchema(content.homeFaq)];
+const privacyHref = locale === 'en' ? '/privacy' : '/id/privasi';
+---
+
+<Base
+  locale={locale}
+  title={content.title}
+  description={content.description}
+  canonicalPath={canonicalPath}
+  alternatePath={alternatePath}
+  ogImage="/og/home.png"
+  jsonLd={schemas}
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow"><span class="eyebrow-dot"></span>{content.eyebrow}</span>
+        <h1 set:html={content.heroTitle} />
+        <p class="hero-lead">{content.heroLead}</p>
+        <div class="hero-actions">
+          <a class="button" href="#tools">{content.primaryCta} <Icon name="arrow-right" size={17} /></a>
+          <a class="button secondary" href="#how-it-works">{content.secondaryCta}</a>
+        </div>
+        <ul class="trust-row">
+          {content.trust.map((item) => (
+            <li><Icon name="check" size={15} />{item}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="hero-card" aria-hidden="true">
+        <div class="hero-card-inner">
+          <div class="hero-card-label">
+            <span>{content.visualLabel}</span>
+            <span class="hero-pill"><Icon name="shield" size={12} />{content.visualBadge}</span>
+          </div>
+          <div class="hero-file">
+            <span class="hero-file-icon"><Icon name="image" size={20} /></span>
+            <span class="hero-file-meta">
+              <strong>{content.visualFile}</strong>
+              <small>{content.visualBefore} → {content.visualAfter}</small>
+            </span>
+          </div>
+          <div class="hero-target">
+            <span>{content.visualTarget}</span>
+            <strong>{content.visualTargetValue}</strong>
+          </div>
+          <div class="hero-bar"><span style="width: 82%"></span></div>
+          <div class="hero-card-foot">
+            <span>{content.visualFoot}</span>
+            <span>{content.visualFootRight}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" id="tools">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow"><span class="eyebrow-dot"></span>{content.libraryEyebrow}</span>
+          <h2>{content.libraryTitle}</h2>
+          <p>{content.libraryBody}</p>
+        </div>
+        <a class="button ghost small" href={guideHref}>{ui.nav.guides} <Icon name="arrow-right" size={15} /></a>
+      </div>
+
+      <div class="tool-tabs" role="tablist" aria-label={content.libraryAll}>
+        <button class="tool-tab" type="button" role="tab" aria-selected="true" data-home-filter="all">{content.libraryAll}</button>
+        {categoryKeys.map((category) => (
+          <button class="tool-tab" type="button" role="tab" aria-selected="false" data-home-filter={category}>
+            {categories[category].name[locale]}
+          </button>
+        ))}
+      </div>
+
+      <div class="tool-grid" data-home-grid>
+        {tools.map((tool) => (
+          <ToolCard tool={tool} locale={locale} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2>{content.categoryTitle}</h2>
+          <p>{content.categoryBody}</p>
+        </div>
+      </div>
+      <div class="category-grid">
+        {categoryKeys.map((category) => {
+          const categoryTools = getToolsByCategory(category);
+          return (
+            <a class="category-card" href={categoryPath(category, locale)} data-category={category}>
+              <span class="category-card-icon" data-category={category}>
+                <Icon name={categories[category].icon} size={25} />
+              </span>
+              <span class="category-card-body">
+                <strong>{categories[category].name[locale]}</strong>
+                <span>{ui.category.count.replace('{n}', String(categoryTools.length))}</span>
+                <small>{categories[category].hub[locale].intro[0].split('. ')[0]}.</small>
+              </span>
+              <span class="category-card-arrow"><Icon name="arrow-right" size={18} /></span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section" id="how-it-works">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow"><span class="eyebrow-dot"></span>{content.howEyebrow}</span>
+          <h2>{content.howTitle}</h2>
+          <p>{content.howBody}</p>
+        </div>
+      </div>
+
+      <div class="home-how-grid">
+        <ol class="home-steps">
+          {content.steps.map((step, index) => (
+            <li>
+              <span class="home-step-number">{String(index + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <aside class="privacy-panel">
+          <span class="privacy-panel-icon"><Icon name="shield" size={24} /></span>
+          <h3>{content.privacyTitle}</h3>
+          <p>{content.privacyBody}</p>
+          <a href={privacyHref}>{content.privacyCta} <Icon name="arrow-right" size={15} /></a>
+          <div class="home-stats">
+            {content.stats.map((stat) => (
+              <span><strong>{stat.value}</strong><small>{stat.label}</small></span>
+            ))}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow"><span class="eyebrow-dot"></span>{content.guidesEyebrow}</span>
+          <h2>{content.guidesTitle}</h2>
+          <p>{content.guidesBody}</p>
+        </div>
+        <a class="button ghost small" href={guideHref}>{content.guidesCta} <Icon name="arrow-right" size={15} /></a>
+      </div>
+      <div class="guide-grid">
+        {guides.map((guide) => (
+          <a class="guide-card" href={guidePath(guide, locale)}>
+            <span class="guide-card-meta">{ui.common.updated}: {guide.updatedAt} · {guide.readingMinutes} {ui.common.minRead}</span>
+            <h3>{guide.h1}</h3>
+            <p>{guide.excerpt}</p>
+            <span class="guide-card-link">{ui.common.learnMore} <Icon name="arrow-right" size={15} /></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container narrow">
+      <div class="section-head">
+        <div>
+          <h2>{content.faqTitle}</h2>
+        </div>
+      </div>
+      <div class="faq-list">
+        {content.homeFaq.map((faq) => (
+          <details class="faq-item">
+            <summary>{faq.q}</summary>
+            <div><p>{faq.a}</p></div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="container">
+      <div class="cta-band">
+        <div>
+          <h2>{content.ctaTitle}</h2>
+          <p>{content.ctaBody}</p>
+        </div>
+        <a class="button" href="#tools">{content.ctaButton} <Icon name="arrow-right" size={17} /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-home-filter]'));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-home-grid] .tool-card'));
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => {
+      const filter = tab.dataset.homeFilter ?? 'all';
+      for (const other of tabs) other.setAttribute('aria-selected', String(other === tab));
+      for (const card of cards) {
+        card.classList.toggle('is-hidden', filter !== 'all' && card.dataset.category !== filter);
+      }
+    });
+  }
+</script>

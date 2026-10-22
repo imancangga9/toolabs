@@ -1,0 +1,68 @@
+---
+import type { Locale } from '../config';
+import { getUi } from '../i18n/ui';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+  alternatePath?: string;
+}
+
+const { locale, alternatePath } = Astro.props;
+const ui = getUi(locale);
+---
+
+{locale === 'en' && alternatePath && (
+  <aside class="lang-banner" id="lang-banner" hidden data-alternate={alternatePath} aria-label={ui.banner.title}>
+    <span class="lang-banner-icon"><Icon name="globe" size={19} /></span>
+    <div class="lang-banner-copy">
+      <strong>{ui.banner.title}</strong>
+      <p>{ui.banner.body}</p>
+    </div>
+    <div class="lang-banner-actions">
+      <a class="button small" href={alternatePath} hreflang="id" lang="id" data-lang-switch="id">{ui.banner.switch}</a>
+      <button class="icon-button" type="button" aria-label={ui.banner.close} data-lang-banner-dismiss>
+        <Icon name="close" size={17} />
+      </button>
+    </div>
+  </aside>
+)}
+
+<script>
+  const banner = document.getElementById('lang-banner');
+  if (banner) {
+    const dismissed = (() => {
+      try {
+        return sessionStorage.getItem('toolabs-banner-dismissed') === '1';
+      } catch {
+        return false;
+      }
+    })();
+    const chosen = (() => {
+      try {
+        return Boolean(localStorage.getItem('toolabs-lang'));
+      } catch {
+        return false;
+      }
+    })();
+    const browserLanguage = (navigator.language || '').toLowerCase();
+    if (!dismissed && !chosen && browserLanguage.startsWith('id')) {
+      banner.removeAttribute('hidden');
+    }
+    banner.querySelector('[data-lang-banner-dismiss]')?.addEventListener('click', () => {
+      banner.setAttribute('hidden', '');
+      try {
+        sessionStorage.setItem('toolabs-banner-dismissed', '1');
+      } catch {
+        // Ignore storage errors.
+      }
+    });
+    banner.querySelector('a[data-lang-switch]')?.addEventListener('click', () => {
+      try {
+        localStorage.setItem('toolabs-lang', 'id');
+      } catch {
+        // Ignore storage errors.
+      }
+    });
+  }
+</script>

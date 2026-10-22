@@ -1,0 +1,81 @@
+---
+import type { Locale } from '../config';
+import { getUi } from '../i18n/ui';
+import { categoryPath } from '../tools.config';
+import { siteConfig } from '../config';
+import Icon from './Icon.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const ui = getUi(locale);
+const year = new Date().getFullYear();
+const home = locale === 'en' ? '/' : '/id/';
+const otherLocale = locale === 'en' ? 'id' : 'en';
+const link = (en: string, id: string) => (locale === 'en' ? en : `/id/${id}`);
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href={home}>
+          <span class="brand-mark" aria-hidden="true">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 5h12v3h-4.5v11h-3V8H6z" fill="currentColor"></path>
+              <circle cx="18.3" cy="17.8" r="2.7" fill="#3bbd9a"></circle>
+            </svg>
+          </span>
+          <span class="brand-word">Tool<span>abs</span></span>
+        </a>
+        <p>{ui.footer.tagline}</p>
+        <span class="footer-badge"><Icon name="shield" size={13} /> {ui.footer.privacyNote}</span>
+      </div>
+
+      <div class="footer-col">
+        <h2>{ui.footer.product}</h2>
+        <ul>
+          <li><a href={`${home}#tools`}>{ui.footer.allTools}</a></li>
+          {(['image', 'pdf', 'convert'] as const).map((category) => (
+            <li><a href={categoryPath(category, locale)}>{ui.footer[`${category}Tools`]}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h2>{ui.footer.company}</h2>
+        <ul>
+          <li><a href={link('/about', 'tentang')}>{ui.footer.about}</a></li>
+          <li><a href={link('/contact', 'kontak')}>{ui.footer.contact}</a></li>
+          <li><a href={link('/guides', 'panduan')}>{ui.footer.guides}</a></li>
+          <li><a href={link('/glossary', 'glosarium')}>{ui.footer.glossary}</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h2>{ui.footer.legal}</h2>
+        <ul>
+          <li><a href={link('/privacy', 'kebijakan-privasi')}>{ui.footer.privacy}</a></li>
+          <li><a href={link('/terms', 'syarat-ketentuan')}>{ui.footer.terms}</a></li>
+          <li><a href={`mailto:${siteConfig.contactEmail}`}>{siteConfig.contactEmail}</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h2>{ui.common.language}</h2>
+        <ul>
+          <li><a href={locale === 'en' ? '/id/' : '/'} hreflang={otherLocale} lang={otherLocale} data-lang-switch={otherLocale}>{otherLocale === 'id' ? 'Bahasa Indonesia' : 'English'}</a></li>
+          <li><a href={link('/privacy', 'kebijakan-privasi')}>{ui.footer.privacy}</a></li>
+          <li><a href={link('/terms', 'syarat-ketentuan')}>{ui.footer.terms}</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>{ui.footer.copyright.replace('{year}', String(year))}</p>
+      <p>{siteConfig.name} · {ui.footer.privacyNote}</p>
+    </div>
+  </div>
+</footer>

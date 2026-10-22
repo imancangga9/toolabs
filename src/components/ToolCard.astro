@@ -1,0 +1,33 @@
+---
+import type { Locale } from '../config';
+import type { Tool } from '../tools.config';
+import { categories } from '../tools.config';
+import { toolDisplayName } from '../lib/display';
+import Icon from './Icon.astro';
+
+interface Props {
+  tool: Tool;
+  locale: Locale;
+}
+
+const { tool, locale } = Astro.props;
+const content = tool.locale[locale];
+const href = locale === 'en' ? `/${tool.slug.en}` : `/id/${tool.slug.id}`;
+const category = categories[tool.category].name[locale];
+const ui = locale === 'id' ? 'Buka tool' : 'Open tool';
+---
+
+<a class="tool-card" href={href} data-category={tool.category}>
+  <span class="tool-card-top">
+    <span class="tool-icon" data-category={tool.category}>
+      <Icon name={tool.icon} size={21} />
+    </span>
+    <span class="category-chip">{category}</span>
+  </span>
+  <h3>{toolDisplayName(tool, locale)}</h3>
+  <p>{content.metaDescription}</p>
+  <span class="tool-card-foot">
+    {ui}
+    <Icon name="arrow-right" size={16} />
+  </span>
+</a>
