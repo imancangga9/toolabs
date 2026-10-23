@@ -9,6 +9,7 @@ declare module 'pdfjs-dist/build/pdf.worker.min.mjs?url' {
 interface ImportMetaEnv {
   readonly PUBLIC_GTM_ID?: string;
   readonly PUBLIC_ADSENSE_CLIENT?: string;
+  readonly PUBLIC_ADSENSE_SLOT_TOOL?: string;
 }
 
 interface ImportMeta {
@@ -17,5 +18,6 @@ interface ImportMeta {
 
 interface Window {
   dataLayer?: unknown[];
+  adsbygoogle?: unknown[];
   toolabsTrack?: (event: string, params?: Record<string, unknown>) => void;
 }

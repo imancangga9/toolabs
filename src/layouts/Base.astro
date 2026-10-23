@@ -3,6 +3,7 @@ import type { Locale } from '../config';
 import { siteConfig } from '../config';
 import { getUi } from '../i18n/ui';
 import { organizationSchema, websiteSchema } from '../lib/seo';
+import { adsenseClient } from '../lib/ads';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import LangBanner from '../components/LangBanner.astro';
@@ -19,6 +20,8 @@ interface Props {
   jsonLd?: Array<Record<string, unknown>>;
   noindex?: boolean;
   bodyClass?: string;
+  /** Set to false for pages where advertising is not appropriate. */
+  showAds?: boolean;
 }
 
 const {
@@ -32,6 +35,7 @@ const {
   jsonLd = [],
   noindex = false,
   bodyClass = '',
+  showAds = true,
 } = Astro.props;
 
 const origin = Astro.site?.origin ?? 'https://toolabs.com';
@@ -39,6 +43,9 @@ const canonical = new URL(canonicalPath, origin).toString();
 const ogAbsolute = new URL(ogImage, origin).toString();
 const ui = getUi(locale);
 const gtmId = import.meta.env.PUBLIC_GTM_ID;
+// AdSense is never loaded on noindex pages (404, previews), in line with
+// Google's policy against serving ads on screens with no content.
+const loadAds = showAds && !noindex && Boolean(adsenseClient);
 const schemas = [organizationSchema(origin), websiteSchema(origin, locale), ...jsonLd];
 const alternateAbsolute = alternatePath ? new URL(alternatePath, origin).toString() : null;
 const ogLocale = locale === 'id' ? 'id_ID' : 'en_US';
@@ -63,6 +70,7 @@ const ogLocaleAlternate = locale === 'id' ? 'en_US' : 'id_ID';
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'} />
     <meta name="theme-color" content="#0e211c" />
     <meta name="color-scheme" content="light" />
+    {adsenseClient && <meta name="google-adsense-account" content={adsenseClient} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icon-180.png" sizes="180x180" type="image/png" />
     <link rel="apple-touch-icon" href="/icon-180.png" />
@@ -110,6 +118,14 @@ const ogLocaleAlternate = locale === 'id' ? 'en_US' : 'id_ID';
           f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', gtmId);
       </script>
+    )}
+    {loadAds && (
+      <script
+        is:inline
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+        crossorigin="anonymous"
+      ></script>
     )}
   </head>
   <body class={bodyClass}>

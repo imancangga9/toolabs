@@ -51,6 +51,7 @@ const en = {
     new: 'New',
     file: 'file',
     files: 'files',
+    advertisement: 'Advertisement',
   },
   dropzone: {
     title: 'Drop files here',
@@ -330,6 +331,7 @@ const id: Ui = {
     new: 'Baru',
     file: 'file',
     files: 'file',
+    advertisement: 'Iklan',
   },
   dropzone: {
     title: 'Letakkan file di sini',

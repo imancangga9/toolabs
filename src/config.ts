@@ -11,6 +11,9 @@ export const siteConfig = {
   maxFileMB: 100,
   warnFileMB: 40,
   launchDate: '2026-10-21',
+  // Google AdSense publisher ID. Override with PUBLIC_ADSENSE_CLIENT when a
+  // deployment uses a different account.
+  adsenseClient: 'ca-pub-8623127035471863',
 } as const;
 
 export const LOCALES = ['en', 'id'] as const;

@@ -1,0 +1,35 @@
+---
+import { adsenseClient } from '../lib/ads';
+
+interface Props {
+  /** Ad unit ID from AdSense → Ads → By ad unit. */
+  slot: string;
+  /** Responsive by default; use "rectangle", "horizontal", or "vertical" for fixed units. */
+  format?: 'auto' | 'rectangle' | 'horizontal' | 'vertical';
+  /** Optional layout key for in-feed or in-article units. */
+  layoutKey?: string;
+  /** Visible label, for example "Advertisement". */
+  label?: string;
+  class?: string;
+}
+
+const { slot, format = 'auto', layoutKey, label, class: className = '' } = Astro.props;
+---
+
+{adsenseClient && slot && (
+  <div class:list={['ad-slot', className]}>
+    {label && <span class="ad-slot-label">{label}</span>}
+    <ins
+      class="adsbygoogle"
+      style="display:block"
+      data-ad-client={adsenseClient}
+      data-ad-slot={slot}
+      data-ad-format={format}
+      data-ad-layout-key={layoutKey}
+      data-full-width-responsive="true"
+    ></ins>
+    <script is:inline>
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  </div>
+)}

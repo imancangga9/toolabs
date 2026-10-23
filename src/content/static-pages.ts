@@ -73,7 +73,7 @@ const en: Record<StaticPageKey, StaticPage> = {
       {
         heading: 'How the project is funded',
         paragraphs: [
-          'Toolabs is free to use. If advertising is introduced, it will be clearly separated from the tools and will never involve uploading your files. We will not put document content behind an account or a paywall. The privacy policy will be updated before any new data practice starts.',
+          'Toolabs is free to use and funded by advertising delivered by Google AdSense. Ads are clearly separated from the tools, are labelled, and never involve uploading your files. Document content will never be placed behind an account or a paywall.',
         ],
       },
       {
@@ -88,10 +88,10 @@ const en: Record<StaticPageKey, StaticPage> = {
     title: 'Privacy Policy — Toolabs',
     h1: 'Privacy policy',
     metaDescription:
-      'How Toolabs handles files, analytics, server logs, and local storage. Your images and PDFs are processed in your browser and are never uploaded.',
+      'How Toolabs handles files, analytics, advertising cookies, server logs, and local storage. Your images and PDFs are processed in your browser and are never uploaded.',
     intro:
       'The short version: your files are processed on your device. Toolabs does not receive, store, or inspect the images and PDFs you use with the tools. This page explains the limited data that a website still needs to operate.',
-    updatedAt: '2026-10-21',
+    updatedAt: '2026-10-23',
     blocks: [
       {
         heading: 'Files you process',
@@ -112,6 +112,13 @@ const en: Record<StaticPageKey, StaticPage> = {
         paragraphs: [
           'Toolabs may use privacy-conscious, aggregated measurement to understand which tools are useful. Analytics events are limited to things such as the tool identifier, file count, output format, file size, and whether a target size was reached. File names, file contents, and document text are never included.',
           'If Google Tag Manager or a similar measurement tool is enabled in a deployment, it may set cookies or similar identifiers according to that provider’s policies. When no measurement ID is configured, the production build does not load third-party analytics scripts.',
+        ],
+      },
+      {
+        heading: 'Advertising',
+        paragraphs: [
+          'Toolabs is supported by Google AdSense. When ads are enabled, Google and its partners may use cookies, device identifiers, and approximate location to select, cap, and measure ads. Ads are labelled and kept separate from the tools. The images and PDFs you process in your browser are never sent to Google or to an advertiser.',
+          'You can read how Google uses information from sites that use its services at policies.google.com/technologies/partner-sites and manage personalised advertising at adssettings.google.com. In regions that require it, a consent message appears before advertising cookies are set, and you can change your choice through that message.',
         ],
       },
       {
@@ -139,7 +146,8 @@ const en: Record<StaticPageKey, StaticPage> = {
         bullets: [
           'You can use the tools with JavaScript enabled and disconnect from the internet after the page loads; local processing should continue to work.',
           'You can clear localStorage and sessionStorage in your browser settings to remove saved preferences.',
-          'You can block analytics scripts with a browser extension or content blocker. The tools do not depend on them.',
+          'You can block analytics and advertising scripts with a browser extension or content blocker. The tools do not depend on them.',
+          'You can opt out of personalised advertising in Google Ads Settings or at aboutads.info/choices.',
           'You can contact us to ask a privacy question or report a concern.',
         ],
       },
@@ -373,7 +381,7 @@ const id: Record<StaticPageKey, StaticPage> = {
       {
         heading: 'Cara proyek ini dibiayai',
         paragraphs: [
-          'Toolabs gratis digunakan. Jika iklan diperkenalkan, iklan akan dipisahkan jelas dari tool dan tidak akan melibatkan unggahan file Anda. Kami tidak akan menaruh konten dokumen di balik akun atau paywall. Kebijakan privasi akan diperbarui sebelum praktik data baru dimulai.',
+          'Toolabs gratis digunakan dan didukung oleh iklan dari Google AdSense. Iklan dipisahkan jelas dari tool, diberi label, dan tidak pernah melibatkan unggahan file Anda. Konten dokumen tidak akan ditempatkan di balik akun atau paywall.',
         ],
       },
       {
@@ -388,10 +396,10 @@ const id: Record<StaticPageKey, StaticPage> = {
     title: 'Kebijakan Privasi — Toolabs',
     h1: 'Kebijakan privasi',
     metaDescription:
-      'Cara Toolabs menangani file, analitik, log server, dan penyimpanan lokal. Gambar dan PDF Anda diproses di browser dan tidak pernah diunggah.',
+      'Cara Toolabs menangani file, analitik, cookie iklan, log server, dan penyimpanan lokal. Gambar dan PDF Anda diproses di browser dan tidak pernah diunggah.',
     intro:
       'Versi singkatnya: file Anda diproses di perangkat Anda. Toolabs tidak menerima, menyimpan, atau memeriksa gambar dan PDF yang Anda gunakan. Halaman ini menjelaskan data terbatas yang tetap dibutuhkan situs untuk beroperasi.',
-    updatedAt: '2026-10-21',
+    updatedAt: '2026-10-23',
     blocks: [
       {
         heading: 'File yang Anda proses',
@@ -412,6 +420,13 @@ const id: Record<StaticPageKey, StaticPage> = {
         paragraphs: [
           'Toolabs dapat menggunakan pengukuran agregat yang ramah privasi untuk memahami tool mana yang berguna. Peristiwa analitik terbatas pada hal seperti pengenal tool, jumlah file, format keluaran, ukuran file, dan apakah target ukuran tercapai. Nama file, isi file, dan teks dokumen tidak pernah disertakan.',
           'Jika Google Tag Manager atau alat pengukuran serupa diaktifkan dalam suatu deployment, alat tersebut dapat menetapkan cookie atau pengenal serupa sesuai kebijakan penyedianya. Ketika tidak ada ID pengukuran yang dikonfigurasi, build produksi tidak memuat skrip analitik pihak ketiga.',
+        ],
+      },
+      {
+        heading: 'Iklan',
+        paragraphs: [
+          'Toolabs didukung oleh Google AdSense. Saat iklan aktif, Google dan mitranya dapat menggunakan cookie, pengenal perangkat, dan perkiraan lokasi untuk memilih, membatasi, dan mengukur iklan. Iklan diberi label dan dipisahkan dari tool. Gambar dan PDF yang Anda proses di browser tidak pernah dikirim ke Google atau pengiklan.',
+          'Anda dapat membaca cara Google menggunakan informasi dari situs yang memakai layanannya di policies.google.com/technologies/partner-sites dan mengatur iklan yang dipersonalisasi di adssettings.google.com. Di wilayah yang mewajibkannya, pesan persetujuan muncul sebelum cookie iklan dipasang, dan pilihan Anda dapat diubah melalui pesan tersebut.',
         ],
       },
       {
@@ -439,7 +454,8 @@ const id: Record<StaticPageKey, StaticPage> = {
         bullets: [
           'Anda dapat menggunakan tool dengan JavaScript aktif lalu memutus koneksi internet setelah halaman dimuat; pemrosesan lokal seharusnya tetap bekerja.',
           'Anda dapat menghapus localStorage dan sessionStorage melalui pengaturan browser untuk menghilangkan preferensi tersimpan.',
-          'Anda dapat memblokir skrip analitik dengan ekstensi browser atau pemblokir konten. Tool tidak bergantung padanya.',
+          'Anda dapat memblokir skrip analitik dan iklan dengan ekstensi browser atau pemblokir konten. Tool tidak bergantung padanya.',
+          'Anda dapat menolak iklan yang dipersonalisasi melalui Setelan Iklan Google atau di aboutads.info/choices.',
           'Anda dapat menghubungi kami untuk menanyakan privasi atau melaporkan kekhawatiran.',
         ],
       },

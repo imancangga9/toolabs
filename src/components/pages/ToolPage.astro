@@ -20,6 +20,8 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../Breadcrumbs.astro';
 import Icon from '../Icon.astro';
 import ToolRunner from '../react/ToolRunner';
+import AdSlot from '../AdSlot.astro';
+import { adsenseSlots } from '../../lib/ads';
 
 interface Props {
   locale: Locale;
@@ -102,6 +104,10 @@ const schemas = [
             sortable={tool.sortable ?? false}
             defaults={tool.options}
           />
+
+          {adsenseSlots.tool && (
+            <AdSlot slot={adsenseSlots.tool} label={ui.common.advertisement} />
+          )}
 
           <div class="tool-content">
             <section class="answer-box" id="answer">
