@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site?.origin ?? 'https://toolabs.com';
+  const origin = site?.origin ?? 'https://www.toolabs.web.id';
   const aiBots = [
     'GPTBot',
     'ChatGPT-User',
@@ -22,7 +22,7 @@ export const GET: APIRoute = ({ site }) => {
   ];
 
   const lines = [
-    '# Toolabs — https://toolabs.com',
+    `# Toolabs — ${origin}`,
     '# Public content is available to search engines and AI assistants.',
     '# User files are never uploaded or crawled; processing happens in the browser.',
     '',

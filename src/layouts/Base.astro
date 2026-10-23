@@ -38,7 +38,7 @@ const {
   showAds = true,
 } = Astro.props;
 
-const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonical = new URL(canonicalPath, origin).toString();
 const ogAbsolute = new URL(ogImage, origin).toString();
 const ui = getUi(locale);

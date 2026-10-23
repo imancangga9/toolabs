@@ -81,7 +81,7 @@ async function mergePdfs(
 
   const merged = await PDFDocument.create();
   merged.setProducer('Toolabs');
-  merged.setCreator('Toolabs (toolabs.com)');
+  merged.setCreator('Toolabs (toolabs.web.id)');
 
   for (let index = 0; index < files.length; index += 1) {
     report(request, index, index / files.length);
@@ -226,7 +226,7 @@ async function imageToPdf(request: PdfWorkerRequest): Promise<PdfWorkerOutput[]>
 
   const document = await PDFDocument.create();
   document.setProducer('Toolabs');
-  document.setCreator('Toolabs (toolabs.com)');
+  document.setCreator('Toolabs (toolabs.web.id)');
 
   for (let index = 0; index < files.length; index += 1) {
     let bitmap: ImageBitmap;

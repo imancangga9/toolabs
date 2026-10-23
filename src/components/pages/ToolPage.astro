@@ -31,7 +31,7 @@ interface Props {
 const { locale, tool } = Astro.props;
 const ui = getUi(locale);
 const content = tool.locale[locale];
-const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonicalPath = toolPath(tool, locale);
 const alternatePath = toolPath(tool, locale === 'en' ? 'id' : 'en');
 const canonicalUrl = new URL(canonicalPath, origin).toString();

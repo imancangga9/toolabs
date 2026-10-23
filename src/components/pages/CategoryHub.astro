@@ -22,7 +22,7 @@ const { locale, category } = Astro.props;
 const ui = getUi(locale);
 const hub = categories[category].hub[locale];
 const categoryTools = getToolsByCategory(category);
-const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonicalPath = categoryPath(category, locale);
 const alternatePath = categoryPath(category, locale === 'en' ? 'id' : 'en');
 const homePath = locale === 'en' ? '/' : '/id/';

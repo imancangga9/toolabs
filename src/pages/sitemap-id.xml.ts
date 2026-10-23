@@ -10,8 +10,7 @@ function escapeXml(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
-function build(locale: 'en' | 'id'): string {
-  const origin = 'https://toolabs.com';
+function build(locale: 'en' | 'id', origin: string): string {
   const entries = routePairs()
     .map((pair) => {
       const canonical = escapeXml(new URL(pair[locale], origin).toString());
@@ -38,8 +37,8 @@ function build(locale: 'en' | 'id'): string {
 }
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site?.origin ?? 'https://toolabs.com';
-  const body = build('id').replaceAll('https://toolabs.com', origin);
+  const origin = site?.origin ?? 'https://www.toolabs.web.id';
+  const body = build('id', origin);
   return new Response(body, {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',

@@ -14,7 +14,7 @@ interface Props {
 const { locale } = Astro.props;
 const ui = getUi(locale);
 const guides = getGuides(locale);
-const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonicalPath = guidesIndexPath(locale);
 const alternatePath = guidesIndexPath(locale === 'en' ? 'id' : 'en');
 const homePath = locale === 'en' ? '/' : '/id/';

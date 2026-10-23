@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 
-// The production domain is still an open decision (see PRD §17).
-// Set SITE_URL in the build environment when the domain is confirmed.
+// Canonical production origin. Override with SITE_URL only when deploying a
+// staging copy; every canonical URL, sitemap, and AI index is built from it.
 export default defineConfig({
-  site: process.env.SITE_URL || 'https://toolabs.com',
+  site: process.env.SITE_URL || 'https://www.toolabs.web.id',
   output: 'static',
   trailingSlash: 'ignore',
   i18n: {

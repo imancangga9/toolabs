@@ -17,7 +17,7 @@ interface Props {
 const { locale, pageKey } = Astro.props;
 const ui = getUi(locale);
 const page = getStaticPage(pageKey, locale);
-const origin = Astro.site?.origin ?? 'https://toolabs.com';
+const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonicalPath = staticPagePaths[pageKey][locale];
 const alternatePath = staticPagePaths[pageKey][locale === 'en' ? 'id' : 'en'];
 const homePath = locale === 'en' ? '/' : '/id/';
