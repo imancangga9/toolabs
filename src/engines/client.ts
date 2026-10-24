@@ -9,6 +9,7 @@ import type {
   RunToolOptions,
 } from './types';
 import { convertPdfToJpg } from './pdf-to-jpg';
+import { generateQrCode } from './qr';
 
 export class EngineError extends Error {
   code: string;
@@ -178,7 +179,9 @@ function imageOutputName(
 ): string {
   const base = safeBase(inputName);
   const extension = extensionForMime(meta.mime);
-  if (engine === 'image-convert') return `${base}.${extension}`;
+  if (engine === 'image-convert' || engine === 'image-converter') {
+    return `${base}.${extension}`;
+  }
   if (engine === 'image-resize') {
     if (options.width === 354 && options.height === 472) return `${base}-3x4.${extension}`;
     return `${base}-${meta.width ?? options.width ?? 'resized'}x${meta.height ?? options.height ?? ''}.${extension}`;
@@ -188,7 +191,7 @@ function imageOutputName(
 }
 
 async function runImageBatch(
-  engine: 'image-compress' | 'image-convert' | 'image-resize',
+  engine: 'image-compress' | 'image-convert' | 'image-converter' | 'image-resize',
   files: File[],
   options: ToolOptions,
   onProgress: ((sourceIndex: number, progress: number) => void) | undefined,
@@ -199,9 +202,22 @@ async function runImageBatch(
     checkAbort(signal);
     const file = files[index];
     onProgress?.(index, 0.02);
+    if (engine === 'image-converter' && isHeicFile(file)) {
+      const [output] = await runHeic(
+        [file],
+        options,
+        (_, progress) => onProgress?.(index, progress),
+        signal,
+      );
+      if (!output) throw new EngineError('heic');
+      results.push({ ...output, sourceIndex: index });
+      onProgress?.(index, 1);
+      continue;
+    }
+
     const request: ImageWorkerRequest = {
       id: nextId(),
-      engine,
+      engine: engine === 'image-converter' ? 'image-convert' : engine,
       file,
       options,
     };
@@ -225,6 +241,16 @@ async function runImageBatch(
   return results;
 }
 
+function isHeicFile(file: File): boolean {
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  return (
+    file.type === 'image/heic' ||
+    file.type === 'image/heif' ||
+    extension === 'heic' ||
+    extension === 'heif'
+  );
+}
+
 async function runHeic(
   files: File[],
   options: ToolOptions,
@@ -239,34 +265,47 @@ async function runHeic(
     checkAbort(signal);
     const file = files[index];
     onProgress?.(index, 0.05);
+    const outputMime =
+      options.outputFormat && options.outputFormat !== 'auto'
+        ? options.outputFormat
+        : 'image/jpeg';
+    const intermediateMime = outputMime === 'image/jpeg' ? 'image/jpeg' : 'image/png';
 
     let converted: Blob | Blob[];
     try {
       converted = await convert({
         blob: file,
-        toType: 'image/jpeg',
-        quality: Math.min(1, Math.max(0.4, options.quality ?? 0.92)),
+        toType: intermediateMime,
+        quality:
+          intermediateMime === 'image/jpeg'
+            ? Math.min(1, Math.max(0.4, options.quality ?? 0.92))
+            : undefined,
       });
     } catch {
       throw new EngineError('heic');
     }
 
     const blobs = Array.isArray(converted) ? converted : [converted];
-    const jpeg = blobs[0];
-    if (!jpeg) throw new EngineError('heic');
+    const intermediateBlob = blobs[0];
+    if (!intermediateBlob) throw new EngineError('heic');
     const warnings: OutputMeta['warnings'] = blobs.length > 1 ? ['heic-first-frame'] : [];
     onProgress?.(index, 0.15);
 
-    const needsWorker = Boolean(options.targetKB || options.maxWidth);
+    const needsWorker =
+      Boolean(options.targetKB || options.maxWidth) || outputMime !== intermediateMime;
     if (needsWorker) {
-      const workerFile = new File([jpeg], `${safeBase(file.name)}.jpg`, { type: 'image/jpeg' });
+      const workerFile = new File(
+        [intermediateBlob],
+        `${safeBase(file.name)}.${extensionForMime(intermediateMime)}`,
+        { type: intermediateMime },
+      );
       const engine = options.targetKB ? 'image-compress' : 'image-convert';
       const response = await sendImage(
         {
           id: nextId(),
           engine,
           file: workerFile,
-          options: { ...options, outputFormat: 'image/jpeg' },
+          options: { ...options, outputFormat: outputMime },
         },
         (progress) => onProgress?.(index, 0.15 + progress * 0.8),
         signal,
@@ -274,7 +313,7 @@ async function runHeic(
       checkAbort(signal);
       results.push({
         id: `${index}-${nextId()}`,
-        name: `${safeBase(file.name)}.jpg`,
+        name: `${safeBase(file.name)}.${extensionForMime(outputMime)}`,
         blob: response.blob,
         meta: {
           ...response.meta,
@@ -287,7 +326,7 @@ async function runHeic(
       let width: number | undefined;
       let height: number | undefined;
       try {
-        const bitmap = await createImageBitmap(jpeg);
+        const bitmap = await createImageBitmap(intermediateBlob);
         width = bitmap.width;
         height = bitmap.height;
         bitmap.close();
@@ -296,15 +335,15 @@ async function runHeic(
       }
       results.push({
         id: `${index}-${nextId()}`,
-        name: `${safeBase(file.name)}.jpg`,
-        blob: jpeg,
+        name: `${safeBase(file.name)}.${extensionForMime(outputMime)}`,
+        blob: intermediateBlob,
         meta: {
           originalBytes: file.size,
-          bytes: jpeg.size,
-          mime: 'image/jpeg',
+          bytes: intermediateBlob.size,
+          mime: outputMime,
           width,
           height,
-          quality: options.quality ?? 0.92,
+          quality: outputMime === 'image/png' ? undefined : (options.quality ?? 0.92),
           warnings,
         },
         sourceIndex: index,
@@ -355,11 +394,19 @@ export async function runTool({
   engine,
   files,
   options,
+  qrOptions,
+  qrLogo,
   onProgress,
   signal,
 }: RunToolOptions): Promise<OutputResult[]> {
-  if (!files.length) throw new EngineError('no-files');
   checkAbort(signal);
+
+  if (engine === 'qr-generator') {
+    if (!qrOptions) throw new EngineError('qr-required');
+    return generateQrCode(qrOptions, qrLogo, signal, (progress) => onProgress?.(0, progress));
+  }
+
+  if (!files.length) throw new EngineError('no-files');
 
   if (engine === 'pdf-to-jpg') {
     return convertPdfToJpg(
@@ -378,7 +425,12 @@ export async function runTool({
     return runHeic(files, options, onProgress, signal);
   }
 
-  if (engine === 'image-compress' || engine === 'image-convert' || engine === 'image-resize') {
+  if (
+    engine === 'image-compress' ||
+    engine === 'image-convert' ||
+    engine === 'image-converter' ||
+    engine === 'image-resize'
+  ) {
     return runImageBatch(engine, files, options, onProgress, signal);
   }
 

@@ -232,7 +232,7 @@ export const guides: Guide[] = [
         a: 'Yes, if the browser has enough memory. Small documents usually merge without trouble. For large scans, a desktop browser is more reliable. The interface and file picker work on both Android and iPhone.',
       },
     ],
-    relatedTools: ['merge-pdf', 'split-pdf', 'rotate-pdf', 'pdf-to-jpg'],
+    relatedTools: ['merge-pdf', 'optimize-pdf', 'compress-pdf'],
   },
 ];
 
@@ -445,7 +445,7 @@ const idGuides: Guide[] = [
         a: 'Bisa, jika browser memiliki cukup memori. Dokumen kecil biasanya tidak bermasalah. Untuk hasil pindai besar, browser desktop lebih andal. Antarmuka dan pemilih file berfungsi di Android maupun iPhone.',
       },
     ],
-    relatedTools: ['merge-pdf', 'split-pdf', 'rotate-pdf', 'pdf-to-jpg'],
+    relatedTools: ['merge-pdf', 'optimize-pdf', 'compress-pdf'],
   },
 ];
 

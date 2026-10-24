@@ -7,7 +7,24 @@ export type WarningCode =
   | 'png-lossless'
   | 'output-larger'
   | 'heic-first-frame'
-  | 'pages-clamped';
+  | 'pages-clamped'
+  | 'qr-logo-large'
+  | 'qr-contrast'
+  | 'qr-ecc-raised';
+
+export type QrEcc = 'L' | 'M' | 'Q' | 'H';
+
+export type QrOptions = {
+  text: string;
+  ecc: QrEcc;
+  colorDark: string;
+  colorLight: string;
+  margin: number;
+  size: number;
+  logoPercent: number;
+  logoRounded: boolean;
+  logoBackground: boolean;
+};
 
 export type OutputMeta = {
   originalBytes: number;
@@ -35,6 +52,8 @@ export type RunToolOptions = {
   engine: EngineId;
   files: File[];
   options: ToolOptions;
+  qrOptions?: QrOptions;
+  qrLogo?: File | null;
   onProgress?: (sourceIndex: number, progress: number) => void;
   signal?: AbortSignal;
 };

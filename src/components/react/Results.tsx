@@ -11,6 +11,7 @@ type Props = {
   locale: Locale;
   toolId: string;
   onStartOver: () => void;
+  showPreview?: boolean;
 };
 
 const WARNING_KEYS: Record<WarningCode, keyof ReturnType<typeof getUi>['warnings']> = {
@@ -21,6 +22,9 @@ const WARNING_KEYS: Record<WarningCode, keyof ReturnType<typeof getUi>['warnings
   'output-larger': 'outputLarger',
   'heic-first-frame': 'heicFirstFrame',
   'pages-clamped': 'pagesClamped',
+  'qr-logo-large': 'qrLogoLarge',
+  'qr-contrast': 'qrContrast',
+  'qr-ecc-raised': 'qrEccRaised',
 };
 
 function triggerDownload(blob: Blob, name: string): void {
@@ -77,7 +81,25 @@ function DownloadLink({
   );
 }
 
-export default function Results({ results, locale, toolId, onStartOver }: Props) {
+function ResultPreview({ blob, alt }: { blob: Blob; alt: string }) {
+  const [url, setUrl] = useState<string>();
+
+  useEffect(() => {
+    const next = URL.createObjectURL(blob);
+    setUrl(next);
+    return () => URL.revokeObjectURL(next);
+  }, [blob]);
+
+  return url ? <img className="qr-preview" src={url} alt={alt} /> : null;
+}
+
+export default function Results({
+  results,
+  locale,
+  toolId,
+  onStartOver,
+  showPreview = false,
+}: Props) {
   const ui = getUi(locale);
   const [zipError, setZipError] = useState<string | null>(null);
   const [zipping, setZipping] = useState(false);
@@ -124,7 +146,7 @@ export default function Results({ results, locale, toolId, onStartOver }: Props)
       </div>
 
       <div className="result-list">
-        {results.map((result) => {
+        {results.map((result, index) => {
           const hasBefore = result.meta.originalBytes > 0;
           const difference = hasBefore ? (1 - result.meta.bytes / result.meta.originalBytes) * 100 : null;
           const warnings = Array.from(new Set(result.meta.warnings));
@@ -134,6 +156,7 @@ export default function Results({ results, locale, toolId, onStartOver }: Props)
               : null;
           return (
             <article className="result-card" key={result.id}>
+              {showPreview && index === 0 && <ResultPreview blob={result.blob} alt={ui.qr.previewAlt} />}
               <div className="result-main">
                 <span className="result-name" title={result.name}>{result.name}</span>
                 <div className="result-sizes">
