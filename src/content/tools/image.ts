@@ -1,30 +1,126 @@
 import type { Tool } from '../../tools.config';
 
+type AddedImageTool = {
+  id: string;
+  slug: { en: string; id: string };
+  name: { en: string; id: string };
+  category: 'compress' | 'convert' | 'edit';
+  engine: 'image-compress' | 'image-convert' | 'image-resize';
+  accept: string[];
+  icon: string;
+  options: Tool['options'];
+  fixedFormat?: boolean;
+  comingSoon?: boolean;
+};
+
+export const commonImageAccept = [
+  'image/*',
+  ...'jpg jpeg png webp gif tiff tif heic heif avif bmp ico psd psb jfif jpe jif jfi jp2 tga wpg xbm xpm apng cur art dib dpx exr fax hdr hrz mng mtv palm pbm pcd pcx pfm pgm pict pix pnm ppm pwp rgb rgba rla sct sfw sgi sun dcm dds odg raw raf cr2 arw crw dcr dng mrw nef orf pef 3fr cr3 dcs drf erf iiq k25 kdc mef mos nrw ptx rw2 sr2 srf srw x3f'
+    .split(' ')
+    .map((extension) => `.${extension}`),
+];
+
+function makeImageTool(spec: AddedImageTool): Tool {
+  const buildContent = (locale: 'en' | 'id') => {
+    const name = spec.name[locale];
+    const isEnglish = locale === 'en';
+    const shortAnswer = spec.comingSoon
+      ? isEnglish
+        ? `${name} is coming soon and cannot process files yet. The tool will run in your browser when it becomes available. No image is uploaded, and your original files remain unchanged. Development is still underway, so there is no output to create or download yet. Check this page again later for the finished processor.`
+        : `${name} segera hadir dan belum dapat memproses file. Tool akan berjalan di browser saat tersedia. Tidak ada gambar yang diunggah dan file asli tetap utuh. Fitur ini masih dalam pengembangan, jadi belum ada hasil yang bisa dibuat atau diunduh. Kunjungi halaman ini lagi nanti untuk menggunakan pemrosesnya.`
+      : isEnglish
+        ? `Add an image, review the available options, and run ${name}. The browser reads and processes the file locally, then prepares the requested result for download. Input support depends on the format and browser decoder. Your original file remains unchanged, and no image is uploaded to Toolabs.`
+        : `Tambahkan gambar, periksa opsi yang tersedia, lalu jalankan ${name}. Browser membaca dan memproses file secara lokal, kemudian menyiapkan hasil untuk diunduh. Dukungan masukan bergantung pada format dan dekoder browser. File asli tetap utuh dan gambar tidak diunggah ke Toolabs.`;
+    return {
+      title: `${name} Online ${isEnglish ? 'Free' : 'Gratis'}`,
+      h1: name,
+      metaDescription: isEnglish
+        ? spec.comingSoon
+          ? `${name} is coming soon to Toolabs.`
+          : `${name} in your browser. Process images locally, review the result, and download without uploading your files.`
+        : spec.comingSoon
+          ? `${name} segera hadir di Toolabs.`
+          : `${name} di browser. Proses gambar secara lokal, periksa hasilnya, dan unduh tanpa mengunggah file.`,
+      answerQuestion: isEnglish ? `How do I use ${name}?` : `Bagaimana cara menggunakan ${name}?`,
+      shortAnswer,
+      intro: spec.comingSoon
+        ? isEnglish
+          ? `${name} is being prepared and is not available yet.`
+          : `${name} sedang disiapkan dan belum tersedia.`
+        : isEnglish
+          ? `Use ${name} to prepare image files in your browser. Add supported images, choose the available settings, and process them locally. Check the output before downloading; the original file is not changed.`
+          : `Gunakan ${name} untuk mengolah file gambar di browser. Tambahkan gambar yang didukung, pilih pengaturan yang tersedia, lalu proses secara lokal. Periksa hasil sebelum mengunduh; file asli tidak berubah.`,
+      steps: isEnglish
+        ? [`Open ${name} and add an image file.`, 'Set the available output or size options.', 'Process the image in your browser.', 'Review and download the result.']
+        : [`Buka ${name} dan tambahkan file gambar.`, 'Atur format keluaran atau ukuran yang tersedia.', 'Proses gambar di browser.', 'Periksa lalu unduh hasilnya.'],
+      benefits: isEnglish
+        ? ['Local processing keeps image files on your device.', 'The original file is not overwritten.', 'The result is available to review before download.']
+        : ['Pemrosesan lokal menjaga file gambar tetap di perangkat.', 'File asli tidak ditimpa.', 'Hasil dapat diperiksa sebelum diunduh.'],
+      useCases: isEnglish
+        ? ['Prepare images for a website or form.', 'Adjust an image before sharing or printing.', 'Process a private photo without uploading it.']
+        : ['Menyiapkan gambar untuk situs atau formulir.', 'Menyesuaikan gambar sebelum dibagikan atau dicetak.', 'Memproses foto pribadi tanpa mengunggahnya.'],
+      faq: isEnglish
+        ? [
+            { q: 'Are my images uploaded?', a: 'No. Processing happens in your browser and the files stay on your device.' },
+            { q: 'Which image formats can I use?', a: 'The tool accepts the formats shown in its file picker. Actual decoding also depends on your browser.' },
+            { q: 'Does the tool change my original file?', a: 'No. It creates a separate output file and leaves the original untouched.' },
+            { q: 'Can I process multiple images?', a: 'Yes. Add multiple supported files to process them in one batch.' },
+            { q: 'Why might an image fail to open?', a: 'Some formats are not decoded by every browser. Try a current browser or convert the source to a supported format first.' },
+          ]
+        : [
+            { q: 'Apakah gambar saya diunggah?', a: 'Tidak. Pemrosesan berjalan di browser dan file tetap di perangkat Anda.' },
+            { q: 'Format gambar apa yang dapat digunakan?', a: 'Tool menerima format yang ditampilkan pada pemilih file. Dekode juga bergantung pada browser.' },
+            { q: 'Apakah file asli diubah?', a: 'Tidak. Tool membuat file hasil terpisah dan membiarkan file asli tetap utuh.' },
+            { q: 'Bisakah memproses beberapa gambar?', a: 'Bisa. Tambahkan beberapa file yang didukung untuk diproses sekaligus.' },
+            { q: 'Mengapa gambar gagal dibuka?', a: 'Tidak semua browser mendekode setiap format. Coba browser terbaru atau konversi sumber ke format yang didukung.' },
+          ],
+      tip: spec.comingSoon
+        ? (isEnglish ? 'This tool is being prepared.' : 'Tool ini sedang disiapkan.')
+        : undefined,
+    };
+  };
+
+  return {
+    id: spec.id,
+    slug: spec.slug,
+    category: spec.category,
+    engine: spec.engine,
+    accept: spec.accept,
+    icon: spec.icon,
+    fixedFormat: spec.fixedFormat,
+    comingSoon: spec.comingSoon,
+    options: spec.options,
+    related: [],
+    updatedAt: '2026-10-25',
+    locale: { en: buildContent('en'), id: buildContent('id') },
+  };
+}
+
 export const imageTools: Tool[] = [
   {
     id: 'compress-image',
     slug: { en: 'compress-image', id: 'kompres-gambar' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
-    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    accept: commonImageAccept,
     icon: 'compress',
     featured: 1,
-    options: {},
+    options: { autoGifHeicJpg: true },
     related: ['compress-jpg-to-100kb', 'compress-jpg-to-200kb', 'compress-png', 'resize-image', 'png-to-webp'],
     updatedAt: '2026-10-21',
     locale: {
       en: {
-        title: 'Compress Image Online Free — JPG, PNG, WebP',
-        h1: 'Compress images without uploading them',
+        title: 'Compress Image Online Free — Any Image Format',
+        h1: 'Compress images to your chosen format',
         metaDescription:
-          'Compress JPG, PNG, and WebP images to a target size in your browser. See the exact before and after size. Free, private, and no signup.',
+          'Compress common image formats to a target size in your browser. Choose JPG, JPEG, PNG, or WebP output. GIF and HEIC export as JPG.',
         answerQuestion: 'How do I compress an image to an exact size?',
         shortAnswer:
-          'Drop a JPG, PNG, or WebP image, set a target such as 100 KB, and Toolabs searches for the highest quality that fits. If quality alone is not enough, it reduces the pixel dimensions step by step. The file is processed in your browser and never uploaded.',
+          'Add an image in a supported format, choose an output format, and set a target size. GIF and HEIC automatically use JPG output, and their format selector stays locked. Toolabs processes the image locally, then shows the new file size and dimensions before you download it. Your original is unchanged.',
         intro:
           'Most compressors give you a quality slider and hope for the best. Toolabs works backwards from the number that usually matters: the maximum file size a portal, form, or email attachment will accept. Enter 100 KB and the engine keeps testing the image until it is under that limit, while trying to preserve as much visual quality as possible. The widget shows both sizes, the final dimensions, and a warning when the result needed aggressive compression. Because the image is decoded and re-encoded locally, you can use the tool on confidential documents without sending them anywhere.',
         steps: [
-          'Drop a JPG, PNG, or WebP file, or choose one from your device.',
+          'Add a supported image file from your device.',
           'Enter a target size in KB or pick a preset such as 100 KB or 200 KB.',
           'Leave the output format on Auto, or choose JPG or WebP if you want a smaller result.',
           'Press Process file and compare the before and after sizes.',
@@ -86,16 +182,16 @@ export const imageTools: Tool[] = [
         title: 'Kompres Gambar Online Gratis — JPG, PNG, WebP',
         h1: 'Kompres gambar tanpa upload ke server',
         metaDescription:
-          'Kompres gambar JPG, PNG, dan WebP ke ukuran target di browser. Lihat ukuran sebelum dan sesudah. Gratis, privat, tanpa daftar.',
+          'Kompres berbagai format gambar ke ukuran target di browser. Pilih JPG, JPEG, PNG, atau WebP. GIF dan HEIC otomatis menjadi JPG.',
         answerQuestion: 'Bagaimana cara kompres gambar ke ukuran tertentu?',
         shortAnswer:
-          'Letakkan gambar JPG, PNG, atau WebP, tentukan target seperti 100 KB, lalu Toolabs mencari kualitas tertinggi yang muat. Jika kualitas saja tidak cukup, dimensi piksel diperkecil bertahap. File diproses di browser Anda dan tidak pernah diunggah. Nilai sebelum dan sesudah ditampilkan supaya Anda bisa memeriksa hasilnya.',
+          'Tambahkan gambar dalam format yang didukung, pilih format keluaran, dan tentukan target ukuran. GIF dan HEIC otomatis memakai keluaran JPG dan pilihan formatnya terkunci. Toolabs memproses gambar secara lokal, lalu menampilkan ukuran file serta dimensi hasil sebelum diunduh. File asli Anda tidak berubah.',
         intro:
           'Sebagian besar alat kompres hanya memberi slider kualitas dan berharap hasilnya cocok. Toolabs bekerja dari angka yang biasanya paling penting: batas ukuran file yang diterima portal, formulir, atau lampiran email. Masukkan 100 KB, lalu mesin terus menguji gambar sampai berada di bawah batas itu sambil menjaga kualitas visual sebaik mungkin. Widget menampilkan ukuran sebelum dan sesudah, dimensi akhir, serta peringatan bila kompresi harus sangat agresif. Karena gambar dibaca dan dikodekan ulang secara lokal, tool ini aman untuk dokumen pribadi.',
         steps: [
-          'Letakkan file JPG, PNG, atau WebP, atau pilih dari perangkat Anda.',
+          'Tambahkan file gambar yang didukung dari perangkat Anda.',
           'Masukkan target ukuran dalam KB atau pilih preset seperti 100 KB atau 200 KB.',
-          'Biarkan format keluaran Otomatis, atau pilih JPG/WebP untuk hasil lebih kecil.',
+          'Biarkan format keluaran Otomatis, atau pilih JPG, JPEG, PNG, maupun WebP.',
           'Tekan Proses file dan bandingkan ukuran sebelum dan sesudah.',
           'Unduh gambar hasil kompres, atau proses file lain tanpa memuat ulang halaman.',
         ],
@@ -157,7 +253,7 @@ export const imageTools: Tool[] = [
   {
     id: 'compress-jpg-to-100kb',
     slug: { en: 'compress-jpg-to-100kb', id: 'kompres-jpg-100kb' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
     accept: ['image/jpeg'],
     icon: 'target',
@@ -177,7 +273,7 @@ export const imageTools: Tool[] = [
         intro:
           'A 100 KB limit is common on job applications, university forms, and older upload portals. The file is usually a portrait or a scan, and the portal rejects anything above the cap without explaining how to fix it. This page uses the same compression engine as Compress Image, but arrives with the 100 KB target already set. The engine searches for the best quality under the limit instead of applying a fixed quality percentage, then lowers dimensions only when necessary. If your photo is a 12-megapixel image, some resizing is normal: a 100 KB JPEG cannot preserve every pixel of a large photo.',
         steps: [
-          'Add the JPG you need to send. PNG and WebP files are not accepted on this page.',
+          'Add an image in any supported format. The result is always a JPG file.',
           'The target is already set to 100 KB. Change it only if your portal uses a different limit.',
           'Press Process file. Toolabs will test quality settings and, if required, reduce dimensions.',
           'Check the result size, dimensions, and any warning before downloading.',
@@ -245,7 +341,7 @@ export const imageTools: Tool[] = [
         intro:
           'Batas 100 KB sering muncul di portal lamaran kerja, formulir kampus, dan situs pendaftaran lama. File yang diunggah biasanya foto wajah atau hasil pindai, dan portal menolak file di atas batas tanpa menjelaskan cara memperbaikinya. Halaman ini memakai mesin kompres yang sama dengan Kompres Gambar, tetapi target 100 KB sudah terisi. Mesin mencari kualitas terbaik di bawah batas, bukan menerapkan persentase kualitas tetap, lalu memperkecil dimensi hanya bila perlu. Jika foto Anda 12 megapiksel, pengecilan dimensi adalah hal normal: JPEG 100 KB tidak mungkin menyimpan seluruh detail foto besar.',
         steps: [
-          'Tambahkan foto JPG yang ingin dikirim. Halaman ini tidak menerima PNG atau WebP.',
+          'Tambahkan gambar dalam format apa pun yang didukung. Hasilnya selalu berupa file JPG.',
           'Target sudah terisi 100 KB. Ubah hanya jika portal Anda memakai batas berbeda.',
           'Tekan Proses file. Toolabs akan menguji kualitas dan bila perlu memperkecil dimensi.',
           'Periksa ukuran hasil, dimensi, dan peringatan sebelum mengunduh.',
@@ -308,10 +404,12 @@ export const imageTools: Tool[] = [
   {
     id: 'compress-jpg-to-200kb',
     slug: { en: 'compress-jpg-to-200kb', id: 'kompres-jpg-200kb' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
     accept: ['image/jpeg'],
     icon: 'target',
+    featured: 6,
+    fixedFormat: true,
     options: { targetKB: 200, outputFormat: 'image/jpeg' },
     related: ['compress-jpg-to-100kb', 'compress-image', 'photo-3x4', 'compress-png'],
     updatedAt: '2026-10-21',
@@ -458,10 +556,12 @@ export const imageTools: Tool[] = [
   {
     id: 'compress-png',
     slug: { en: 'compress-png', id: 'kompres-png' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
-    accept: ['image/png'],
+    accept: commonImageAccept,
     icon: 'png',
+    featured: 3,
+    fixedFormat: true,
     options: { outputFormat: 'image/png' },
     related: ['compress-image', 'resize-image', 'png-to-webp', 'jpg-to-png'],
     updatedAt: '2026-10-21',
@@ -475,17 +575,17 @@ export const imageTools: Tool[] = [
         shortAnswer:
           'Add a PNG and set a target size. Because PNG is lossless, Toolabs cannot trade quality for bytes the way it does with JPG; it reduces the pixel dimensions instead. If you need a dramatically smaller file, convert to WebP, which supports transparency and compresses much better.',
         intro:
-          'PNG is excellent for screenshots, logos, and images with transparency, but it is a poor choice for photographs. A 4 MB PNG screenshot can often become a 300 KB WebP with no visible difference. This tool gives you two honest paths: keep PNG and reduce dimensions, or change the format. Many “PNG compressors” quietly convert your file to JPG and remove transparency; Toolabs tells you what will happen and lets you choose. The output format is set to PNG by default here. Change it to WebP in the options if file size matters more than keeping the exact format.',
+          'PNG is excellent for screenshots, logos, and images with transparency, but it is a poor choice for photographs. A 4 MB PNG screenshot can often become a 300 KB WebP with no visible difference. This tool gives you two honest paths: keep PNG and reduce dimensions, or change the format. Many “PNG compressors” quietly convert your file to JPG and remove transparency; Toolabs tells you what will happen and lets you choose. The output stays PNG on this page, so the extension never changes. If file size matters more than keeping the exact format, use PNG to WebP instead.',
         steps: [
-          'Drop a PNG file or select several at once.',
+          'Add image files in supported formats. The output is always PNG.',
           'Enter a target size if you have a limit, or leave it empty to use the default quality.',
-          'Keep PNG as the output, or switch to WebP for a smaller file with transparency intact.',
+          'Leave the output locked to PNG so the file keeps its extension and its transparency.',
           'Process the image and compare the result, dimensions, and format.',
           'Download the compressed file and check that transparency is preserved if needed.',
         ],
         benefits: [
           'No misleading “lossless compression” claim: the tool shows when dimensions were reduced.',
-          'Optional WebP output keeps transparency while cutting file size substantially.',
+          'Transparency and the .png extension are preserved in the result.',
           'Screenshots and interface images stay sharp because they are never converted to JPG.',
           'Local processing means unpublished designs and client work stay private.',
         ],
@@ -502,7 +602,7 @@ export const imageTools: Tool[] = [
           },
           {
             q: 'Should I use WebP instead of PNG?',
-            a: 'Use WebP for photographs and large images where a smaller file matters. Use PNG when an app or workflow requires PNG, or when you need absolutely identical pixels. WebP supports transparency, so replacing a transparent PNG is usually safe on the web.',
+            a: 'Use WebP for photographs and large images where a smaller file matters; the PNG to WebP converter makes that change while keeping transparency. Use PNG when an app or workflow requires PNG, or when you need absolutely identical pixels. Replacing a transparent PNG with WebP is usually safe on the web.',
           },
           {
             q: 'Will transparency be preserved?',
@@ -510,7 +610,7 @@ export const imageTools: Tool[] = [
           },
           {
             q: 'Can I compress a PNG to 100 KB?',
-            a: 'Yes, by reducing dimensions. A large screenshot may need to become much smaller in pixels to reach 100 KB as PNG. If that is not acceptable, convert to WebP or JPG and compare the visual result. The tool will show the dimensions it used.',
+            a: 'Yes, by reducing dimensions. A large screenshot may need to become much smaller in pixels to reach 100 KB as PNG. If that is not acceptable, run it through PNG to WebP or JPG and compare the visual result. The tool will show the dimensions it used.',
           },
           {
             q: 'Does the tool remove metadata from PNG files?',
@@ -543,17 +643,17 @@ export const imageTools: Tool[] = [
         shortAnswer:
           'Tambahkan PNG dan tentukan target ukuran. Karena PNG lossless, Toolabs tidak bisa menukar kualitas dengan byte seperti pada JPG; yang diperkecil adalah dimensi piksel. Jika butuh file jauh lebih kecil, konversi ke WebP yang mendukung transparansi dan kompresinya lebih efisien.',
         intro:
-          'PNG sangat baik untuk tangkapan layar, logo, dan gambar transparan, tetapi buruk untuk foto. PNG tangkapan layar 4 MB sering bisa menjadi WebP 300 KB tanpa perbedaan terlihat. Tool ini memberi dua pilihan jujur: tetap PNG dan perkecil dimensi, atau ganti format. Banyak “kompresor PNG” diam-diam mengubah file menjadi JPG dan menghapus transparansi; Toolabs menjelaskan apa yang terjadi dan membiarkan Anda memilih. Format keluaran di halaman ini adalah PNG. Ubah ke WebP di opsi jika ukuran file lebih penting daripada mempertahankan format persis.',
+          'PNG sangat baik untuk tangkapan layar, logo, dan gambar transparan, tetapi buruk untuk foto. PNG tangkapan layar 4 MB sering bisa menjadi WebP 300 KB tanpa perbedaan terlihat. Tool ini memberi dua pilihan jujur: tetap PNG dan perkecil dimensi, atau ganti format. Banyak “kompresor PNG” diam-diam mengubah file menjadi JPG dan menghapus transparansi; Toolabs menjelaskan apa yang terjadi dan membiarkan Anda memilih. Keluaran tetap PNG di halaman ini, sehingga ekstensinya tidak pernah berubah. Jika ukuran file lebih penting daripada format persis, gunakan PNG ke WebP.',
         steps: [
-          'Letakkan file PNG atau pilih beberapa sekaligus.',
+          'Tambahkan gambar dalam format yang didukung. Hasil keluaran selalu PNG.',
           'Masukkan target ukuran jika ada batas, atau kosongkan untuk memakai kualitas bawaan.',
-          'Pertahankan PNG sebagai keluaran, atau pilih WebP untuk file lebih kecil dengan transparansi tetap utuh.',
+          'Biarkan keluaran terkunci ke PNG agar file mempertahankan ekstensi serta transparansinya.',
           'Proses gambar dan bandingkan hasil, dimensi, serta formatnya.',
           'Unduh file hasil dan pastikan transparansi tetap ada bila diperlukan.',
         ],
         benefits: [
           'Tanpa klaim “kompresi lossless” yang menyesatkan: tool menunjukkan bila dimensi diperkecil.',
-          'Opsi WebP mempertahankan transparansi sekaligus memangkas ukuran file secara signifikan.',
+          'Transparansi dan ekstensi .png dipertahankan pada hasil.',
           'Tangkapan layar dan gambar antarmuka tetap tajam karena tidak diubah ke JPG.',
           'Pemrosesan lokal membuat desain yang belum dipublikasikan dan pekerjaan klien tetap privat.',
         ],
@@ -570,7 +670,7 @@ export const imageTools: Tool[] = [
           },
           {
             q: 'Sebaiknya pakai WebP atau PNG?',
-            a: 'Gunakan WebP untuk foto dan gambar besar yang ukurannya penting. Gunakan PNG bila aplikasi atau alur kerja mewajibkan PNG, atau bila piksel harus benar-benar identik. WebP mendukung transparansi, jadi menggantikan PNG transparan biasanya aman di web.',
+            a: 'Gunakan WebP untuk foto dan gambar besar yang ukurannya penting; tool PNG ke WebP melakukan perubahan itu sambil menjaga transparansi. Gunakan PNG bila aplikasi atau alur kerja mewajibkan PNG, atau bila piksel harus benar-benar identik. Menggantikan PNG transparan dengan WebP biasanya aman di web.',
           },
           {
             q: 'Apakah transparansi dipertahankan?',
@@ -578,7 +678,7 @@ export const imageTools: Tool[] = [
           },
           {
             q: 'Bisakah kompres PNG jadi 100 KB?',
-            a: 'Bisa, dengan memperkecil dimensi. Tangkapan layar besar mungkin harus menjadi jauh lebih kecil dalam piksel untuk mencapai 100 KB sebagai PNG. Jika itu tidak dapat diterima, konversi ke WebP atau JPG dan bandingkan hasil visualnya. Tool akan menunjukkan dimensi yang dipakai.',
+            a: 'Bisa, dengan memperkecil dimensi. Tangkapan layar besar mungkin harus menjadi jauh lebih kecil dalam piksel untuk mencapai 100 KB sebagai PNG. Jika itu tidak dapat diterima, jalankan lewat PNG ke WebP atau JPG dan bandingkan hasil visualnya. Tool akan menunjukkan dimensi yang dipakai.',
           },
           {
             q: 'Apakah tool menghapus metadata dari PNG?',
@@ -608,9 +708,9 @@ export const imageTools: Tool[] = [
   {
     id: 'resize-image',
     slug: { en: 'resize-image', id: 'ubah-ukuran-gambar' },
-    category: 'image',
+    category: 'edit',
     engine: 'image-resize',
-    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    accept: commonImageAccept,
     icon: 'resize',
     options: { fit: 'contain', outputFormat: 'auto' },
     related: ['photo-3x4', 'compress-image', 'png-to-webp', 'jpg-to-png'],
@@ -760,9 +860,9 @@ export const imageTools: Tool[] = [
   {
     id: 'photo-3x4',
     slug: { en: 'resize-photo-3x4', id: 'foto-3x4' },
-    category: 'image',
+    category: 'edit',
     engine: 'image-resize',
-    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    accept: commonImageAccept,
     icon: 'id-photo',
     options: {
       width: 354,
@@ -775,7 +875,7 @@ export const imageTools: Tool[] = [
     updatedAt: '2026-10-21',
     locale: {
       en: {
-        title: 'Resize Photo to 3x4 cm (354x472 px) Online',
+        title: 'Resize Photo Online — 2x3, 3x4, or 4x6',
         h1: 'Make a 3×4 cm photo (354 × 472 px)',
         metaDescription:
           'Create a 3×4 cm photo at 300 DPI in your browser. Crop to the right ratio, set a 200 KB target, and download a ready-to-upload JPG.',
@@ -912,4 +1012,656 @@ export const imageTools: Tool[] = [
       },
     },
   },
+
+  {
+    id: 'compress-jpg',
+    slug: { en: 'compress-jpg', id: 'kompres-jpg' },
+    category: 'compress',
+    engine: 'image-compress',
+    accept: commonImageAccept,
+    icon: 'jpg',
+    featured: 2,
+    fixedFormat: true,
+    options: { targetKB: 200, outputFormat: 'image/jpeg' },
+    related: ['compress-image', 'compress-jpg-to-100kb', 'compress-jpg-to-200kb', 'compress-png', 'resize-image'],
+    updatedAt: '2026-10-25',
+    locale: {
+      en: {
+        title: 'Compress JPG Online Free — Same Format, Smaller File',
+        h1: 'Compress JPG files without changing the format',
+        metaDescription:
+          'Compress a JPG to 100 KB, 200 KB, or any target size in your browser. The result stays a JPG with the highest quality that fits.',
+        answerQuestion: 'How do I compress a JPG file?',
+        shortAnswer:
+          'Add a JPG, set a target such as 100 KB, and Toolabs searches for the highest quality that fits under it. The output keeps the .jpg extension, so nothing has to be converted afterwards. If quality alone is not enough, the pixel dimensions are reduced step by step. The file is decoded and re-encoded in your browser and never uploaded.',
+        intro:
+          'JPG is the format that job portals, campus forms, and marketplaces ask for most often, which is why the limit is usually written in kilobytes rather than as a quality percentage. This tool works backwards from that number: enter 100 KB and it keeps testing encodes until the file is under the limit, lowering quality first and shrinking pixels only when quality is no longer enough. The result is written as a JPG with the same extension, so you can drop it straight back into the same form without renaming anything. The whole loop runs in a Web Worker on your device, so a confidential photo never leaves the computer.',
+        steps: [
+          'Drop a JPG file, or choose one from your device.',
+          'Enter a target size in KB, or pick a preset such as 100 KB or 200 KB.',
+          'Leave the format locked to JPG so the output keeps the same extension.',
+          'Press Process file and compare the before and after sizes.',
+          'Download the compressed JPG, or add another file without reloading.',
+        ],
+        benefits: [
+          'The extension never changes, so the result drops back into the same form.',
+          'Quality is lowered before dimensions, keeping the picture as sharp as the limit allows.',
+          'The result panel shows the exact bytes saved and the final pixel size.',
+          'No upload: the JPG is re-encoded locally and downloaded from a Blob URL.',
+        ],
+        useCases: [
+          'Getting a profile photo under the 100 KB limit of a job portal.',
+          'Shrinking a scanned signature so an email attachment stays small.',
+          'Preparing a batch of product photos under a marketplace file limit.',
+          'Reducing a screenshot that is too heavy to attach to a support ticket.',
+        ],
+        faq: [
+          {
+            q: 'Does compressing a JPG keep the same file extension?',
+            a: 'Yes. The output is written as .jpg, exactly like the input. This tool locks the format so it cannot silently become WebP or PNG. Use the Convert tools when you genuinely want a different format.',
+          },
+          {
+            q: 'Can I compress a JPG to exactly 100 KB?',
+            a: 'The result is at or just below the target rather than exactly 100.00 KB, because encoders cannot hit an exact byte count. What portals check is the maximum, and the tool stays under it whenever the target is reachable.',
+          },
+          {
+            q: 'What happens if the target is too strict?',
+            a: 'Toolabs reports the smallest result it could produce and marks the target as missed, instead of returning a bad file quietly. Raising the target slightly or starting from a smaller photo usually solves it.',
+          },
+          {
+            q: 'Does the tool remove EXIF data?',
+            a: 'Yes. Re-encoding on a canvas creates a new file without camera model, timestamps, or GPS coordinates. Visual orientation is preserved because the browser applies the EXIF rotation while decoding.',
+          },
+          {
+            q: 'Is my photo uploaded?',
+            a: 'No. The file is read with the File API, decoded in your browser, and encoded inside a Web Worker on your device. Toolabs has no endpoint that accepts image uploads.',
+          },
+          {
+            q: 'How is this different from Compress JPG to 100 KB?',
+            a: 'That page is a preset with the target already fixed at 100 KB. This page starts at 200 KB and accepts any limit you type, so it fits portals with unusual rules.',
+          },
+        ],
+        comparison: {
+          caption: 'Common JPG limits',
+          headers: ['Target', 'Typical use', 'What to expect'],
+          rows: [
+            ['100 KB', 'Job portals, campus forms', 'Clear portrait at 600–1200 px'],
+            ['200 KB', 'CPNS and ID photos', 'Usually keeps 3×4 cm at 300 DPI'],
+            ['500 KB', 'Marketplaces, blog images', 'Barely any visible change'],
+          ],
+          note: 'Some systems count 1 KB as 1,000 bytes. Aim slightly below the number the portal states.',
+        },
+        tip: 'If the portal also limits pixel dimensions, set them first with Resize Image and then compress, so the picture is not scaled down twice.',
+      },
+      id: {
+        title: 'Kompres JPG Online Gratis — Format Sama, Ukuran Lebih Kecil',
+        h1: 'Kompres JPG tanpa mengubah format file',
+        metaDescription:
+          'Kompres JPG ke 100 KB, 200 KB, atau ukuran target apa pun di browser. Hasilnya tetap JPG dengan kualitas tertinggi yang muat.',
+        answerQuestion: 'Bagaimana cara kompres file JPG?',
+        shortAnswer:
+          'Tambahkan file JPG, tentukan target seperti 100 KB, lalu Toolabs mencari kualitas tertinggi yang muat di bawahnya. Hasil tetap berekstensi .jpg sehingga tidak perlu dikonversi lagi. Jika kualitas saja tidak cukup, dimensi piksel diperkecil bertahap. File didekode dan dikodekan ulang di browser Anda, tidak pernah diunggah.',
+        intro:
+          'JPG adalah format yang paling sering diminta portal lamaran, formulir kampus, dan marketplace, itulah sebabnya batasnya biasanya ditulis dalam kilobyte, bukan persentase kualitas. Tool ini bekerja mundur dari angka itu: masukkan 100 KB, lalu mesin terus menguji hasil encoding sampai file berada di bawah batas, menurunkan kualitas lebih dulu dan baru memperkecil piksel ketika kualitas tidak lagi cukup. Hasil ditulis sebagai JPG dengan ekstensi yang sama, sehingga bisa langsung dimasukkan kembali ke formulir yang sama tanpa mengganti nama. Seluruh proses berjalan di Web Worker pada perangkat Anda, jadi foto sensitif tidak pernah meninggalkan komputer.',
+        steps: [
+          'Letakkan file JPG, atau pilih dari perangkat Anda.',
+          'Masukkan target ukuran dalam KB, atau pilih preset seperti 100 KB atau 200 KB.',
+          'Biarkan format terkunci ke JPG agar ekstensi hasil tetap sama.',
+          'Tekan Proses file dan bandingkan ukuran sebelum serta sesudah.',
+          'Unduh JPG hasil kompres, atau tambahkan file lain tanpa memuat ulang.',
+        ],
+        benefits: [
+          'Ekstensi tidak pernah berubah, jadi hasil langsung cocok untuk formulir yang sama.',
+          'Kualitas diturunkan sebelum dimensi, sehingga gambar tetap setajam yang diizinkan batas.',
+          'Panel hasil menampilkan byte yang dihemat dan ukuran piksel akhir.',
+          'Tanpa unggah: JPG dikodekan ulang secara lokal dan diunduh dari Blob URL.',
+        ],
+        useCases: [
+          'Menurunkan foto profil di bawah batas 100 KB pada portal lamaran.',
+          'Memperkecil tanda tangan hasil pindai agar lampiran email tetap ringan.',
+          'Menyiapkan banyak foto produk sesuai batas ukuran marketplace.',
+          'Mengecilkan tangkapan layar yang terlalu berat untuk dilampirkan ke tiket dukungan.',
+        ],
+        faq: [
+          {
+            q: 'Apakah kompresi JPG mempertahankan ekstensi file yang sama?',
+            a: 'Ya. Hasil ditulis sebagai .jpg, persis seperti file masukan. Tool ini mengunci format agar tidak berubah diam-diam menjadi WebP atau PNG. Gunakan tool Konversi jika Anda memang menginginkan format lain.',
+          },
+          {
+            q: 'Bisakah kompres JPG tepat 100 KB?',
+            a: 'Hasilnya berada di atau sedikit di bawah target, bukan tepat 100,00 KB, karena encoder tidak bisa mencapai jumlah byte yang persis. Yang diperiksa portal adalah batas maksimum, dan tool tetap berada di bawahnya selama target masih mungkin dicapai.',
+          },
+          {
+            q: 'Apa yang terjadi jika target terlalu ketat?',
+            a: 'Toolabs menampilkan hasil terkecil yang bisa dihasilkan dan menandai target sebagai tidak terpenuhi, alih-alih diam-diam mengembalikan file buruk. Menaikkan target sedikit atau memulai dari foto yang lebih kecil biasanya menyelesaikan masalah.',
+          },
+          {
+            q: 'Apakah tool menghapus data EXIF?',
+            a: 'Ya. Pengodean ulang menghasilkan file baru tanpa model kamera, waktu pengambilan, atau koordinat GPS. Orientasi visual tetap benar karena browser menerapkan rotasi EXIF saat membaca gambar.',
+          },
+          {
+            q: 'Apakah foto saya diunggah?',
+            a: 'Tidak. File dibaca lewat File API, didekode di browser, lalu dikodekan di dalam Web Worker pada perangkat Anda. Toolabs tidak memiliki endpoint yang menerima unggahan gambar.',
+          },
+          {
+            q: 'Apa bedanya dengan Kompres JPG 100 KB?',
+            a: 'Halaman tersebut adalah preset dengan target yang sudah terkunci di 100 KB. Halaman ini mulai dari 200 KB dan menerima batas apa pun yang Anda ketik, sehingga cocok untuk portal dengan aturan tidak biasa.',
+          },
+        ],
+        comparison: {
+          caption: 'Batas JPG yang umum',
+          headers: ['Target', 'Biasanya untuk', 'Perkiraan hasil'],
+          rows: [
+            ['100 KB', 'Portal lamaran, formulir kampus', 'Portrait jelas pada 600–1200 px'],
+            ['200 KB', 'Portal CPNS, foto identitas', 'Umumnya mempertahankan 3×4 cm pada 300 DPI'],
+            ['500 KB', 'Marketplace, gambar blog', 'Nyaris tanpa perubahan terlihat'],
+          ],
+          note: 'Sebagian sistem menghitung 1 KB sebagai 1.000 byte. Bidik sedikit di bawah angka yang ditulis portal.',
+        },
+        tip: 'Jika portal juga membatasi dimensi piksel, tentukan lebih dulu dengan Ubah Ukuran Gambar baru kompres, agar gambar tidak diperkecil dua kali.',
+      },
+    },
+  },
+
+  {
+    id: 'compress-webp',
+    slug: { en: 'compress-webp', id: 'kompres-webp' },
+    category: 'compress',
+    engine: 'image-compress',
+    accept: commonImageAccept,
+    icon: 'webp',
+    featured: 4,
+    fixedFormat: true,
+    options: { targetKB: 200, outputFormat: 'image/webp' },
+    related: ['compress-image', 'compress-png', 'compress-jpg', 'webp-to-jpg', 'resize-image'],
+    updatedAt: '2026-10-25',
+    locale: {
+      en: {
+        title: 'Compress WebP Online Free — Same Format, Smaller File',
+        h1: 'Compress WebP images without changing the format',
+        metaDescription:
+          'Compress a WebP image to a target size in your browser. The result stays WebP with transparency preserved and quality that fits.',
+        answerQuestion: 'How do I compress a WebP image?',
+        shortAnswer:
+          'Add an image in any supported format and set a target size. Toolabs compresses it to WebP, preserving transparency when the source has it. The result is processed locally and the .webp output is ready to download.',
+        intro:
+          'WebP is usually 20 to 35 percent smaller than JPG at the same visual quality and it keeps an alpha channel, which is why modern sites use it for everything. The downside is that a WebP exported from a design tool is often far larger than it needs to be. This tool keeps the format: the input is a WebP and the output is a WebP, with transparency intact and the quality dialled down only as far as your target requires. You can check the exact before and after size in the result panel, and the file is processed on your device without any upload.',
+        steps: [
+          'Add any supported image file. The output is always WebP.',
+          'Enter a target size in KB, or pick a preset such as 100 KB or 200 KB.',
+          'Leave the format locked to WebP so transparency and the extension are preserved.',
+          'Press Process file and watch the before and after sizes.',
+          'Download the compressed WebP, or process another file.',
+        ],
+        benefits: [
+          'Transparency and the .webp extension are preserved in the result.',
+          'Quality is lowered before dimensions, so edges and text stay clean.',
+          'You see the exact byte count and the final pixel size before downloading.',
+          'The image never leaves the device; there is no server round trip.',
+        ],
+        useCases: [
+          'Shrinking WebP exports from a design tool before uploading them to a CMS.',
+          'Getting a transparent logo under a theme or plugin size limit.',
+          'Reducing hero images so a landing page loads faster on mobile data.',
+          'Batch-reducing product images while keeping their transparent backgrounds.',
+        ],
+        faq: [
+          {
+            q: 'Will my transparency survive compression?',
+            a: 'Yes. The output stays WebP, which carries an alpha channel, so transparent areas remain transparent. If you switched to JPG the background would turn white, which is why the format is locked on this page.',
+          },
+          {
+            q: 'Why does my WebP still look sharp after compression?',
+            a: 'WebP encodes smooth gradients and hard edges efficiently, so a moderate quality reduction is rarely noticeable on screen. When the target forces a strong reduction, the tool scales the pixels down instead of pushing quality into the visible range.',
+          },
+          {
+            q: 'Can I convert the result to JPG instead?',
+            a: 'Not on this page. Use WebP to JPG when you need a different format, then compress that result if it is still too large.',
+          },
+          {
+            q: 'What target size should I aim for?',
+            a: 'Around 100 KB is enough for most forms and portals, and 200 KB is comfortable for large web graphics. Always aim slightly below the limit the destination states.',
+          },
+          {
+            q: 'Are my files uploaded?',
+            a: 'No. The WebP is decoded and re-encoded inside a Web Worker on your device, and the download comes from a local Blob URL.',
+          },
+        ],
+        comparison: {
+          caption: 'WebP next to the other web formats',
+          headers: ['Format', 'Typical size for a photo', 'Transparency'],
+          rows: [
+            ['WebP', 'Smallest of the three at similar quality', 'Yes'],
+            ['JPG', 'Baseline that every system accepts', 'No'],
+            ['PNG', 'Largest; best for sharp screenshots', 'Yes'],
+          ],
+          note: 'Some older desktop apps still cannot open WebP. Keep a JPG copy when a portal rejects the file.',
+        },
+        tip: 'If a portal rejects WebP, convert to JPG first and then compress the JPG to the same target.',
+      },
+      id: {
+        title: 'Kompres WebP Online Gratis — Format Sama, Ukuran Lebih Kecil',
+        h1: 'Kompres gambar WebP tanpa mengubah format',
+        metaDescription:
+          'Kompres gambar WebP ke ukuran target di browser. Hasilnya tetap WebP dengan transparansi terjaga dan kualitas yang muat.',
+        answerQuestion: 'Bagaimana cara kompres gambar WebP?',
+        shortAnswer:
+          'Tambahkan gambar dalam format apa pun yang didukung dan tentukan target ukuran. Toolabs mengompresnya menjadi WebP serta mempertahankan transparansi bila sumber memilikinya. Hasil diproses secara lokal dan siap diunduh sebagai .webp. File tetap di perangkat Anda tanpa perlu memasang aplikasi tambahan.',
+        intro:
+          'WebP biasanya 20 sampai 35 persen lebih kecil daripada JPG pada kualitas visual yang sama dan mendukung kanal alpha, itulah sebabnya situs modern memakainya untuk hampir semua hal. Kekurangannya, WebP yang diekspor dari alat desain sering jauh lebih besar dari yang diperlukan. Tool ini mempertahankan format: masukan WebP, keluaran WebP, transparansi utuh, dan kualitas diturunkan hanya sejauh yang target Anda minta. Anda bisa memeriksa ukuran sebelum dan sesudah di panel hasil, dan file diproses di perangkat Anda tanpa unggahan apa pun.',
+        steps: [
+          'Tambahkan gambar apa pun yang didukung. Hasil keluaran selalu WebP.',
+          'Masukkan target ukuran dalam KB, atau pilih preset seperti 100 KB atau 200 KB.',
+          'Biarkan format terkunci ke WebP agar transparansi dan ekstensi terjaga.',
+          'Tekan Proses file dan perhatikan ukuran sebelum serta sesudah.',
+          'Unduh WebP hasil kompres, atau proses file lain.',
+        ],
+        benefits: [
+          'Transparansi dan ekstensi .webp dipertahankan pada hasil.',
+          'Kualitas diturunkan sebelum dimensi, sehingga tepi dan teks tetap bersih.',
+          'Anda melihat jumlah byte persis dan ukuran piksel akhir sebelum mengunduh.',
+          'Gambar tidak pernah meninggalkan perangkat; tanpa perjalanan ke server.',
+        ],
+        useCases: [
+          'Memperkecil ekspor WebP dari alat desain sebelum diunggah ke CMS.',
+          'Menurunkan logo transparan di bawah batas ukuran tema atau plugin.',
+          'Mengecilkan gambar hero agar halaman cepat dimuat di data seluler.',
+          'Menurunkan banyak foto produk sekaligus sambil mempertahankan latar transparan.',
+        ],
+        faq: [
+          {
+            q: 'Apakah transparansi tetap ada setelah kompresi?',
+            a: 'Ya. Hasil tetap WebP yang membawa kanal alpha, sehingga area transparan tetap transparan. Jika berpindah ke JPG, latar akan menjadi putih; itulah alasan format dikunci di halaman ini.',
+          },
+          {
+            q: 'Mengapa WebP tetap tajam setelah dikompres?',
+            a: 'WebP mengodekan gradien halus dan tepi tajam secara efisien, sehingga penurunan kualitas sedang jarang terlihat di layar. Saat target memaksa pengurangan kuat, tool justru memperkecil piksel agar kualitas tidak masuk rentang yang terlihat.',
+          },
+          {
+            q: 'Bisakah hasilnya dikonversi ke JPG?',
+            a: 'Bukan di halaman ini. Gunakan WebP ke JPG jika Anda membutuhkan format lain, lalu kompres hasilnya bila masih terlalu besar.',
+          },
+          {
+            q: 'Target ukuran berapa yang sebaiknya dipakai?',
+            a: 'Sekitar 100 KB cukup untuk sebagian besar formulir dan portal, dan 200 KB nyaman untuk grafik web besar. Selalu bidik sedikit di bawah batas yang disebutkan tujuan Anda.',
+          },
+          {
+            q: 'Apakah file saya diunggah?',
+            a: 'Tidak. WebP didekode dan dikodekan ulang di dalam Web Worker pada perangkat Anda, dan unduhan berasal dari Blob URL lokal.',
+          },
+        ],
+        comparison: {
+          caption: 'WebP dibanding format web lainnya',
+          headers: ['Format', 'Ukuran tipikal untuk foto', 'Transparansi'],
+          rows: [
+            ['WebP', 'Paling kecil di antara ketiganya pada kualitas serupa', 'Ya'],
+            ['JPG', 'Standar yang diterima semua sistem', 'Tidak'],
+            ['PNG', 'Paling besar; terbaik untuk tangkapan layar tajam', 'Ya'],
+          ],
+          note: 'Sebagian aplikasi desktop lama belum bisa membuka WebP. Simpan salinan JPG bila portal menolak file tersebut.',
+        },
+        tip: 'Jika portal menolak WebP, konversi ke JPG lebih dulu lalu kompres JPG-nya ke target yang sama.',
+      },
+    },
+  },
+
+  {
+    id: 'compress-heic',
+    slug: { en: 'compress-heic', id: 'kompres-heic' },
+    category: 'compress',
+    engine: 'image-compress',
+    accept: ['image/heic', 'image/heif'],
+    icon: 'heic',
+    featured: 7,
+    fixedFormat: true,
+    options: { targetKB: 200, outputFormat: 'image/jpeg', quality: 0.85 },
+    related: ['compress-image', 'compress-jpg', 'heic-to-jpg', 'compress-png', 'resize-image'],
+    updatedAt: '2026-10-25',
+    locale: {
+      en: {
+        title: 'Compress HEIC Photo Online Free — Export as JPG',
+        h1: 'Compress HEIC photos to a JPG in your browser',
+        metaDescription:
+          'Compress an iPhone HEIC photo to a target size and download a JPG that opens everywhere. Decoded locally with WebAssembly.',
+        answerQuestion: 'How do I compress a HEIC photo?',
+        shortAnswer:
+          'Add a HEIC file, set a target such as 200 KB, and Toolabs decodes it locally with WebAssembly, then re-encodes the photo as JPG until it fits. You get a smaller file that every portal, Windows PC, and Android phone can open. The original HEIC stays untouched and nothing is uploaded.',
+        intro:
+          'iPhone photos arrive as HEIC because Apple gets high quality into a small container, but many portals, Windows installations, and Android apps still refuse the format. This tool handles both problems at once: it opens the HEIC locally with a WebAssembly decoder, re-encodes the picture as JPG, and searches for the highest quality that fits your target size. The output is therefore a .jpg file rather than a .heic, because browsers cannot write HEIC; the name of the downloaded file says so clearly. If the HEIC contains several images, only the first frame is used, and Live Photo motion is not preserved.',
+        steps: [
+          'Drop one or more HEIC files from your iPhone or computer.',
+          'Enter a target size in KB, or pick a preset such as 200 KB.',
+          'Leave the output locked to JPG, which is the only format browsers can write here.',
+          'Press Process files and let the local WebAssembly decoder run.',
+          'Download the compressed JPGs, or take everything as a ZIP.',
+        ],
+        benefits: [
+          'One step instead of two: no separate convert-then-compress round trip.',
+          'The result opens on Windows, Android, and every upload portal.',
+          'The photo is decoded and encoded on your device, never on a server.',
+          'The original HEIC is left untouched and is not modified in place.',
+        ],
+        useCases: [
+          'Getting an iPhone photo under a job portal limit that only accepts JPG.',
+          'Sending an HEIC photo to someone whose computer cannot open it.',
+          'Reducing a burst of HEIC photos before attaching them to an email.',
+          'Preparing iPhone pictures for a website that expects lightweight JPG files.',
+        ],
+        faq: [
+          {
+            q: 'Why is the output a JPG and not a smaller HEIC?',
+            a: 'Browsers cannot encode HEIC, so the tool writes JPG instead. The file name reflects that with a .jpg extension. In practice the JPG is what upload portals want anyway.',
+          },
+          {
+            q: 'Will compressing to JPG make the file larger than the HEIC?',
+            a: 'It can, at the same visual quality, because JPEG is less efficient than HEIC. A target size solves this: the tool lowers quality and dimensions until the JPG is under the number you set.',
+          },
+          {
+            q: 'What happens to Live Photos and multiple images?',
+            a: 'Only the first frame inside the HEIC is processed, and Live Photo motion is dropped. If a file contains several images, add it once per image or convert the HEIC first.',
+          },
+          {
+            q: 'Does the HEIC decoder run on a server?',
+            a: 'No. The decoder is a WebAssembly module loaded into your browser, and the JPG is created by the image worker on your device. Nothing is sent anywhere.',
+          },
+          {
+            q: 'Can I choose a different quality myself?',
+            a: 'Yes. Expand Options to set the quality slider and a maximum width. Quality decides how the file looks, while the target decides whether it fits the limit.',
+          },
+        ],
+        comparison: {
+          caption: 'HEIC against the formats you have to submit',
+          headers: ['Format', 'Typical use', 'Where it fails'],
+          rows: [
+            ['HEIC', 'iPhone camera roll', 'Rejected by most portals and Windows apps'],
+            ['JPG', 'Portals, email, Android', 'Slightly larger than HEIC at the same quality'],
+            ['PNG', 'Screenshots with transparency', 'Far too large for photos'],
+          ],
+          note: 'Converting does not add detail the HEIC never had; it only makes the picture compatible.',
+        },
+        tip: 'For photos that must stay under 200 KB, set the target before processing so the tool searches for the fitting quality in one pass.',
+      },
+      id: {
+        title: 'Kompres Foto HEIC Online Gratis — Ekspor sebagai JPG',
+        h1: 'Kompres foto HEIC menjadi JPG di browser Anda',
+        metaDescription:
+          'Kompres foto HEIC iPhone ke ukuran target lalu unduh JPG yang bisa dibuka di mana saja. Didekode lokal dengan WebAssembly.',
+        answerQuestion: 'Bagaimana cara kompres foto HEIC?',
+        shortAnswer:
+          'Tambahkan file HEIC, tentukan target seperti 200 KB, lalu Toolabs membukanya secara lokal dengan WebAssembly dan mengodekan ulang foto sebagai JPG sampai muat. Anda mendapat file lebih kecil yang bisa dibuka semua portal, PC Windows, dan ponsel Android. HEIC asli tidak berubah dan tidak ada yang diunggah.',
+        intro:
+          'Foto iPhone tersimpan sebagai HEIC karena Apple mendapatkan kualitas baik dalam kontainer kecil, tetapi banyak portal, instalasi Windows, dan aplikasi Android masih menolak format tersebut. Tool ini menangani dua masalah sekaligus: membuka HEIC secara lokal dengan dekoder WebAssembly, mengodekan ulang gambar sebagai JPG, lalu mencari kualitas tertinggi yang muat pada target ukuran Anda. Hasilnya karena itu berupa file .jpg, bukan .heic, karena browser tidak bisa menulis HEIC; nama file unduhan menyatakannya dengan jelas. Jika HEIC berisi beberapa gambar, hanya frame pertama yang dipakai, dan gerakan Live Photo tidak dipertahankan.',
+        steps: [
+          'Letakkan satu atau beberapa file HEIC dari iPhone atau komputer.',
+          'Masukkan target ukuran dalam KB, atau pilih preset seperti 200 KB.',
+          'Biarkan keluaran terkunci ke JPG, satu-satunya format yang bisa ditulis browser di sini.',
+          'Tekan Proses file dan tunggu dekoder WebAssembly lokal bekerja.',
+          'Unduh JPG hasil kompres, atau ambil semuanya sebagai ZIP.',
+        ],
+        benefits: [
+          'Satu langkah, bukan dua: tidak perlu konversi lalu kompres terpisah.',
+          'Hasil bisa dibuka di Windows, Android, dan semua portal unggahan.',
+          'Foto didekode dan dikodekan di perangkat Anda, bukan di server.',
+          'HEIC asli tidak disentuh dan tidak diubah di tempat.',
+        ],
+        useCases: [
+          'Menurunkan foto iPhone di bawah batas portal lamaran yang hanya menerima JPG.',
+          'Mengirim foto HEIC ke orang yang komputernya tidak bisa membuka format itu.',
+          'Mengecilkan rangkaian foto HEIC sebelum dilampirkan ke email.',
+          'Menyiapkan gambar iPhone untuk situs yang mengharapkan file JPG ringan.',
+        ],
+        faq: [
+          {
+            q: 'Mengapa hasilnya JPG, bukan HEIC yang lebih kecil?',
+            a: 'Browser tidak bisa mengodekan HEIC, jadi tool menulis JPG sebagai gantinya. Nama file mencerminkannya dengan ekstensi .jpg. Dalam praktiknya, JPG memang yang diminta portal unggahan.',
+          },
+          {
+            q: 'Apakah kompresi ke JPG membuat file lebih besar daripada HEIC?',
+            a: 'Bisa, pada kualitas visual yang sama, karena JPEG kurang efisien dibanding HEIC. Target ukuran menyelesaikannya: tool menurunkan kualitas dan dimensi sampai JPG berada di bawah angka yang Anda tentukan.',
+          },
+          {
+            q: 'Apa yang terjadi pada Live Photo dan gambar ganda?',
+            a: 'Hanya frame pertama di dalam HEIC yang diproses, dan gerakan Live Photo hilang. Jika satu file berisi beberapa gambar, tambahkan file tersebut sekali per gambar atau konversi HEInya lebih dulu.',
+          },
+          {
+            q: 'Apakah dekoder HEIC berjalan di server?',
+            a: 'Tidak. Dekoder adalah modul WebAssembly yang dimuat ke browser Anda, dan JPG dibuat oleh worker gambar di perangkat Anda. Tidak ada yang dikirim ke mana pun.',
+          },
+          {
+            q: 'Bisakah saya mengatur kualitas sendiri?',
+            a: 'Bisa. Buka Opsi untuk menggeser slider kualitas dan menentukan lebar maksimum. Kualitas menentukan tampilan gambar, sedangkan target menentukan apakah file sesuai batas.',
+          },
+        ],
+        comparison: {
+          caption: 'HEIC dibanding format yang harus Anda kirimkan',
+          headers: ['Format', 'Biasanya untuk', 'Di mana gagal'],
+          rows: [
+            ['HEIC', 'Galeri foto iPhone', 'Ditolak sebagian besar portal dan aplikasi Windows'],
+            ['JPG', 'Portal, email, Android', 'Sedikit lebih besar daripada HEIC pada kualitas serupa'],
+            ['PNG', 'Tangkapan layar transparan', 'Jauh terlalu besar untuk foto'],
+          ],
+          note: 'Konversi tidak menambah detail yang tidak dimiliki HEIC; konversi hanya membuat gambar kompatibel.',
+        },
+        tip: 'Untuk foto yang harus tetap di bawah 200 KB, tentukan target sebelum memproses agar tool mencari kualitas yang pas dalam satu putaran.',
+      },
+    },
+  },
+
+  {
+    id: 'compress-gif',
+    slug: { en: 'compress-gif', id: 'kompres-gif' },
+    category: 'compress',
+    engine: 'image-compress',
+    accept: ['image/gif'],
+    icon: 'gif',
+    featured: 8,
+    fixedFormat: true,
+    options: { targetKB: 200, outputFormat: 'image/jpeg' },
+    related: ['compress-image', 'compress-jpg', 'compress-png', 'image-converter', 'resize-image'],
+    updatedAt: '2026-10-25',
+    locale: {
+      en: {
+        title: 'Compress GIF Online Free — Smaller First Frame as JPG',
+        h1: 'Compress GIF files to a smaller JPG',
+        metaDescription:
+          'Compress an animated or static GIF to a target size in your browser and download the first frame as a JPG. No upload.',
+        answerQuestion: 'How do I compress a GIF file?',
+        shortAnswer:
+          'Add a GIF, set a target such as 100 KB, and Toolabs takes the first frame, re-encodes it as JPG, and searches for the highest quality that fits. The result is a much smaller .jpg file that any portal accepts. Animation is not preserved, because browsers cannot write GIF.',
+        intro:
+          'A GIF is a poor container: it stores up to 256 colours per frame with an inefficient encoder, so a short animation easily becomes several megabytes while a single frame is usually a few hundred kilobytes at most. This tool exports the first frame as JPG and compresses it to your target size, which is the fastest way to rescue a heavy GIF that a portal refuses to accept. The output is a .jpg file rather than a .gif, because browsers cannot encode GIF; the animation is therefore lost, and the tool says so before you download. If the movement matters, keep the original file and use a dedicated animation editor instead.',
+        steps: [
+          'Drop a GIF file, or choose one from your device.',
+          'Enter a target size in KB, or pick a preset such as 100 KB.',
+          'Leave the output locked to JPG, the format browsers can encode here.',
+          'Press Process file and compare the before and after sizes.',
+          'Download the resulting JPG, or try another GIF.',
+        ],
+        benefits: [
+          'Turns a multi-megabyte GIF into a file a portal will actually accept.',
+          'The first frame keeps the composition of the original animation.',
+          'Quality is lowered before dimensions, so text in the frame stays readable.',
+          'The file is processed on your device and is never uploaded.',
+        ],
+        useCases: [
+          'Rescuing an animated GIF that an application form refuses to upload.',
+          'Taking a single frame from a GIF to use as a static thumbnail.',
+          'Reducing a downloaded reaction GIF so it can be attached to an email.',
+          'Converting a banner GIF into a lightweight JPG for a blog post.',
+        ],
+        faq: [
+          {
+            q: 'Is the animation preserved?',
+            a: 'No. Browsers can read GIF frames but cannot write GIF, so only the first frame is exported, as a .jpg. Use Convert or a dedicated editor when the movement matters.',
+          },
+          {
+            q: 'Why not keep the file as a GIF?',
+            a: 'Because the browser has no GIF encoder. Exporting JPG is also what makes the file dramatically smaller, since GIF colour indexing is inefficient for photographic content.',
+          },
+          {
+            q: 'Which frame is used?',
+            a: 'The first frame of the animation. If you need a different frame, extract it with an animation tool first and then compress that image here.',
+          },
+          {
+            q: 'What if my GIF is already small?',
+            a: 'The tool still re-encodes it, and the result panel shows whether the file actually got smaller. If the source is already well optimised, the saving will be modest.',
+          },
+          {
+            q: 'Are my files uploaded?',
+            a: 'No. The GIF is decoded and re-encoded inside a Web Worker on your device, and the download comes from a local Blob URL.',
+          },
+        ],
+        comparison: {
+          caption: 'What you give up when a GIF becomes JPG',
+          headers: ['Aspect', 'GIF', 'JPG output'],
+          rows: [
+            ['Animation', 'Preserved', 'First frame only'],
+            ['Colours', '256 per frame', 'Millions of colours'],
+            ['File size', 'Large for photos', 'Small at the same visual quality'],
+            ['Transparency', 'Supported', 'Replaced by white'],
+          ],
+          note: 'Keep the original GIF when you still need the animation or a transparent background.',
+        },
+        tip: 'If the frame has a transparent background, compress it as PNG with Compress PNG instead of taking the JPG route.',
+      },
+      id: {
+        title: 'Kompres GIF Online Gratis — Frame Pertama Jadi JPG Lebih Kecil',
+        h1: 'Kompres file GIF menjadi JPG yang lebih kecil',
+        metaDescription:
+          'Kompres GIF animasi atau statis ke ukuran target di browser lalu unduh frame pertama sebagai JPG. Tanpa unggahan.',
+        answerQuestion: 'Bagaimana cara kompres file GIF?',
+        shortAnswer:
+          'Tambahkan GIF, tentukan target seperti 100 KB, lalu Toolabs mengambil frame pertama, mengodekannya ulang sebagai JPG, dan mencari kualitas tertinggi yang muat. Hasilnya file .jpg yang jauh lebih kecil dan diterima semua portal. Animasi tidak dipertahankan karena browser tidak bisa menulis GIF.',
+        intro:
+          'GIF adalah kontainer yang boros: ia menyimpan hingga 256 warna per frame dengan encoder yang tidak efisien, sehingga animasi pendek mudah menjadi beberapa megabyte sementara satu frame biasanya hanya ratusan kilobyte. Tool ini mengekspor frame pertama sebagai JPG lalu mengompresnya ke ukuran target Anda, cara tercepat untuk menyelamatkan GIF berat yang ditolak portal. Hasilnya berupa file .jpg, bukan .gif, karena browser tidak bisa mengodekan GIF; karena itu animasinya hilang, dan tool menyatakannya sebelum Anda mengunduh. Jika gerakannya penting, simpan file asli dan gunakan editor animasi khusus.',
+        steps: [
+          'Letakkan file GIF, atau pilih dari perangkat Anda.',
+          'Masukkan target ukuran dalam KB, atau pilih preset seperti 100 KB.',
+          'Biarkan keluaran terkunci ke JPG, format yang bisa dikodekan browser di sini.',
+          'Tekan Proses file dan bandingkan ukuran sebelum serta sesudah.',
+          'Unduh JPG hasilnya, atau coba GIF lain.',
+        ],
+        benefits: [
+          'Mengubah GIF ber-megabyte menjadi file yang benar-benar diterima portal.',
+          'Frame pertama mempertahankan komposisi animasi asli.',
+          'Kualitas diturunkan sebelum dimensi, sehingga teks pada frame tetap terbaca.',
+          'File diproses di perangkat Anda dan tidak pernah diunggah.',
+        ],
+        useCases: [
+          'Menyelamatkan GIF animasi yang tidak mau diunggah formulir pendaftaran.',
+          'Mengambil satu frame dari GIF untuk dijadikan thumbnail statis.',
+          'Mengecilkan GIF reaksi hasil unduhan agar bisa dilampirkan ke email.',
+          'Mengubah banner GIF menjadi JPG ringan untuk artikel blog.',
+        ],
+        faq: [
+          {
+            q: 'Apakah animasinya dipertahankan?',
+            a: 'Tidak. Browser bisa membaca frame GIF tetapi tidak bisa menulis GIF, jadi hanya frame pertama yang diekspor, berupa .jpg. Gunakan tool Konversi atau editor khusus jika gerakannya penting.',
+          },
+          {
+            q: 'Mengapa tidak mempertahankan format GIF?',
+            a: 'Karena browser tidak memiliki encoder GIF. Mengekspor JPG juga yang membuat file jauh lebih kecil, sebab pengindeksan warna GIF tidak efisien untuk isi berfoto.',
+          },
+          {
+            q: 'Frame mana yang dipakai?',
+            a: 'Frame pertama animasi. Jika Anda membutuhkan frame lain, ekstrak dulu dengan tool animasi lalu kompres gambar tersebut di sini.',
+          },
+          {
+            q: 'Bagaimana jika GIF saya sudah kecil?',
+            a: 'Tool tetap mengodekan ulang, dan panel hasil menunjukkan apakah file benar-benar mengecil. Jika sumbernya sudah optimal, penghematannya tidak akan besar.',
+          },
+          {
+            q: 'Apakah file saya diunggah?',
+            a: 'Tidak. GIF didekode dan dikodekan ulang di dalam Web Worker pada perangkat Anda, dan unduhan berasal dari Blob URL lokal.',
+          },
+        ],
+        comparison: {
+          caption: 'Apa yang dikorbankan saat GIF menjadi JPG',
+          headers: ['Aspek', 'GIF', 'Keluaran JPG'],
+          rows: [
+            ['Animasi', 'Dipertahankan', 'Hanya frame pertama'],
+            ['Warna', '256 per frame', 'Jutaan warna'],
+            ['Ukuran file', 'Besar untuk foto', 'Kecil pada kualitas visual serupa'],
+            ['Transparansi', 'Didukung', 'Diganti dengan putih'],
+          ],
+          note: 'Simpan GIF asli jika Anda masih membutuhkan animasi atau latar transparan.',
+        },
+        tip: 'Jika frame memiliki latar transparan, kompres sebagai PNG melalui Kompres PNG, bukan lewat jalur JPG.',
+      },
+    },
+  },
+  ...([
+    {
+      id: 'compress-jpeg', slug: { en: 'compress-jpeg', id: 'kompres-jpeg' },
+      name: { en: 'Compress JPEG', id: 'Kompres JPEG' }, category: 'compress', engine: 'image-compress',
+      accept: commonImageAccept, icon: 'compress', fixedFormat: true,
+      options: { outputFormat: 'image/jpeg', outputExtension: 'jpeg' },
+    },
+    {
+      id: 'image-to-jpg', slug: { en: 'image-to-jpg', id: 'gambar-ke-jpg' },
+      name: { en: 'Image to JPG', id: 'Gambar ke JPG' }, category: 'convert', engine: 'image-convert',
+      accept: commonImageAccept, icon: 'jpg', fixedFormat: true, options: { outputFormat: 'image/jpeg' },
+    },
+    {
+      id: 'image-to-jpeg', slug: { en: 'image-to-jpeg', id: 'gambar-ke-jpeg' },
+      name: { en: 'Image to JPEG', id: 'Gambar ke JPEG' }, category: 'convert', engine: 'image-convert',
+      accept: commonImageAccept, icon: 'jpg', fixedFormat: true,
+      options: { outputFormat: 'image/jpeg', outputExtension: 'jpeg' },
+    },
+    {
+      id: 'image-to-png', slug: { en: 'image-to-png', id: 'gambar-ke-png' },
+      name: { en: 'Image to PNG', id: 'Gambar ke PNG' }, category: 'convert', engine: 'image-convert',
+      accept: commonImageAccept, icon: 'png', fixedFormat: true, options: { outputFormat: 'image/png' },
+    },
+    {
+      id: 'image-to-webp', slug: { en: 'image-to-webp', id: 'gambar-ke-webp' },
+      name: { en: 'Image to WEBP', id: 'Gambar ke WEBP' }, category: 'convert', engine: 'image-convert',
+      accept: commonImageAccept, icon: 'webp', fixedFormat: true, options: { outputFormat: 'image/webp' },
+    },
+    {
+      id: 'image-to-heic', slug: { en: 'image-to-heic', id: 'gambar-ke-heic' },
+      name: { en: 'Image to HEIC', id: 'Gambar ke HEIC' }, category: 'convert', engine: 'image-convert',
+      accept: commonImageAccept, icon: 'heic', fixedFormat: true, comingSoon: true,
+      options: { outputFormat: 'image/jpeg' },
+    },
+    {
+      id: 'gif-to-jpg', slug: { en: 'gif-to-jpg', id: 'gif-ke-jpg' },
+      name: { en: 'GIF to JPG', id: 'GIF ke JPG' }, category: 'convert', engine: 'image-convert',
+      accept: ['image/gif', '.gif'], icon: 'jpg', fixedFormat: true,
+      options: { outputFormat: 'image/jpeg' },
+    },
+    {
+      id: 'resize-photo', slug: { en: 'resize-photo', id: 'ubah-ukuran-foto' },
+      name: { en: 'Resize Photo', id: 'Ubah Ukuran Foto' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', fixedFormat: true,
+      options: { width: 354, height: 472, fit: 'cover', outputFormat: 'image/jpeg', photoPreset: '3x4' },
+    },
+    {
+      id: 'resize-photo-r', slug: { en: 'resize-photo-r', id: 'ubah-ukuran-foto-r' },
+      name: { en: 'Resize Photo R', id: 'Ubah Ukuran Foto R' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', fixedFormat: true,
+      options: { width: 750, height: 1050, fit: 'cover', outputFormat: 'image/jpeg', photoPreset: '2r' },
+    },
+    {
+      id: 'image-crop', slug: { en: 'image-crop', id: 'crop-gambar' },
+      name: { en: 'Image Crop', id: 'Crop Gambar' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', options: { width: 800, height: 600, fit: 'cover' },
+    },
+    {
+      id: 'image-crop-circle', slug: { en: 'image-crop-circle', id: 'crop-gambar-bulat' },
+      name: { en: 'Image Crop Circle', id: 'Crop Gambar Lingkaran' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', fixedFormat: true,
+      options: { width: 600, height: 600, fit: 'cover', circle: true, outputFormat: 'image/png' },
+    },
+    {
+      id: 'image-rotate', slug: { en: 'image-rotate', id: 'putar-gambar' },
+      name: { en: 'Image Rotate', id: 'Putar Gambar' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', options: { angle: 90 },
+    },
+    {
+      id: 'image-merge', slug: { en: 'image-merge', id: 'gabung-gambar' },
+      name: { en: 'Image Merge', id: 'Gabung Gambar' }, category: 'edit', engine: 'image-resize',
+      accept: commonImageAccept, icon: 'image', comingSoon: true, options: {},
+    },
+  ] satisfies AddedImageTool[]).map(makeImageTool),
 ];

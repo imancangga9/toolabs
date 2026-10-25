@@ -16,10 +16,7 @@ type Props = {
 
 const WARNING_KEYS: Record<WarningCode, keyof ReturnType<typeof getUi>['warnings']> = {
   'low-quality': 'lowQuality',
-  'dimensions-reduced': 'dimensionsReduced',
   'target-unreachable': 'targetUnreachable',
-  'png-lossless': 'pngLossless',
-  'output-larger': 'outputLarger',
   'heic-first-frame': 'heicFirstFrame',
   'pages-clamped': 'pagesClamped',
   'qr-logo-large': 'qrLogoLarge',

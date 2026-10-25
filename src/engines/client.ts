@@ -178,7 +178,7 @@ function imageOutputName(
   options: ToolOptions,
 ): string {
   const base = safeBase(inputName);
-  const extension = extensionForMime(meta.mime);
+  const extension = options.outputExtension ?? extensionForMime(meta.mime);
   if (engine === 'image-convert' || engine === 'image-converter') {
     return `${base}.${extension}`;
   }
@@ -202,10 +202,16 @@ async function runImageBatch(
     checkAbort(signal);
     const file = files[index];
     onProgress?.(index, 0.02);
-    if (engine === 'image-converter' && isHeicFile(file)) {
+    if (
+      (engine === 'image-converter' || engine === 'image-compress' || engine === 'image-convert') &&
+      isHeicFile(file)
+    ) {
+      const heicOptions = options.autoGifHeicJpg
+        ? { ...options, outputFormat: 'image/jpeg' as const }
+        : options;
       const [output] = await runHeic(
         [file],
-        options,
+        heicOptions,
         (_, progress) => onProgress?.(index, progress),
         signal,
       );
@@ -266,7 +272,7 @@ async function runHeic(
     const file = files[index];
     onProgress?.(index, 0.05);
     const outputMime =
-      options.outputFormat && options.outputFormat !== 'auto'
+      !options.autoGifHeicJpg && options.outputFormat && options.outputFormat !== 'auto'
         ? options.outputFormat
         : 'image/jpeg';
     const intermediateMime = outputMime === 'image/jpeg' ? 'image/jpeg' : 'image/png';
@@ -313,7 +319,7 @@ async function runHeic(
       checkAbort(signal);
       results.push({
         id: `${index}-${nextId()}`,
-        name: `${safeBase(file.name)}.${extensionForMime(outputMime)}`,
+        name: `${safeBase(file.name)}.${options.outputExtension ?? extensionForMime(outputMime)}`,
         blob: response.blob,
         meta: {
           ...response.meta,
@@ -335,7 +341,7 @@ async function runHeic(
       }
       results.push({
         id: `${index}-${nextId()}`,
-        name: `${safeBase(file.name)}.${extensionForMime(outputMime)}`,
+        name: `${safeBase(file.name)}.${options.outputExtension ?? extensionForMime(outputMime)}`,
         blob: intermediateBlob,
         meta: {
           originalBytes: file.size,

@@ -44,9 +44,9 @@ const content = locale === 'en'
       libraryEyebrow: 'The library',
       libraryTitle: 'Everyday file jobs, without the upload',
       libraryBody:
-        'Fifteen focused tools for images and PDFs. Pick a task, adjust the options, and download the result. The file never leaves your browser.',
+        'Focused tools for images and PDFs. Pick a task, adjust the options, and download the result. The file never leaves your browser.',
       libraryAll: 'All tools',
-      categoryTitle: 'Browse by file type',
+      categoryTitle: 'Browse by task',
       categoryBody: 'Start with the kind of file you have. Each category page compares the tools and explains the trade-offs.',
       categoryCta: 'Explore',
       howEyebrow: 'How it works',
@@ -80,7 +80,7 @@ const content = locale === 'en'
       ctaBody: 'Pick a tool, keep the file on your device, and get a result you can check before you download.',
       ctaButton: 'Open all tools',
       stats: [
-        { value: '15', label: 'focused tools' },
+        { value: String(tools.length), label: 'focused tools' },
         { value: '0', label: 'file uploads' },
         { value: '2', label: 'languages' },
       ],
@@ -134,9 +134,9 @@ const content = locale === 'en'
       libraryEyebrow: 'Koleksi tool',
       libraryTitle: 'Pekerjaan file sehari-hari, tanpa unggah',
       libraryBody:
-        'Lima belas tool fokus untuk gambar dan PDF. Pilih tugas, atur opsi, lalu unduh hasilnya. File tidak pernah meninggalkan browser Anda.',
+        'Tool fokus untuk gambar dan PDF. Pilih tugas, atur opsi, lalu unduh hasilnya. File tidak pernah meninggalkan browser Anda.',
       libraryAll: 'Semua tool',
-      categoryTitle: 'Jelajahi berdasarkan jenis file',
+      categoryTitle: 'Jelajahi berdasarkan tugas',
       categoryBody: 'Mulai dari jenis file yang Anda punya. Setiap halaman kategori membandingkan tool dan menjelaskan konsekuensinya.',
       categoryCta: 'Jelajahi',
       howEyebrow: 'Cara kerjanya',
@@ -170,7 +170,7 @@ const content = locale === 'en'
       ctaBody: 'Pilih tool, biarkan file tetap di perangkat Anda, dan periksa hasilnya sebelum mengunduh.',
       ctaButton: 'Buka semua tool',
       stats: [
-        { value: '15', label: 'tool fokus' },
+        { value: String(tools.length), label: 'tool fokus' },
         { value: '0', label: 'unggahan file' },
         { value: '2', label: 'bahasa' },
       ],
@@ -202,7 +202,7 @@ const content = locale === 'en'
       ],
     };
 
-const categoryKeys = ['image', 'pdf', 'convert'] as const;
+const categoryKeys = ['compress', 'pdf', 'convert', 'edit'] as const;
 const itemList = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',

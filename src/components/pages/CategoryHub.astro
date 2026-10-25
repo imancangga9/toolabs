@@ -35,7 +35,7 @@ const breadcrumbs = [
   { name: categories[category].name[locale], href: canonicalPath },
 ];
 
-const relatedCategories = (['image', 'pdf', 'convert'] as const).filter((item) => item !== category);
+const relatedCategories = (['compress', 'pdf', 'convert', 'edit'] as const).filter((item) => item !== category);
 const schemas = [
   categorySchema(
     category,

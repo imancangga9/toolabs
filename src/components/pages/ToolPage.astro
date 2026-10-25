@@ -2,6 +2,7 @@
 import type { Locale } from '../../config';
 import { getUi } from '../../i18n/ui';
 import { formatDate } from '../../i18n/format';
+import { toolDisplayName } from '../../lib/display';
 import {
   categories,
   categoryPath,
@@ -31,6 +32,10 @@ interface Props {
 const { locale, tool } = Astro.props;
 const ui = getUi(locale);
 const content = tool.locale[locale];
+const aboutDescription =
+  content.intro.length < 240
+    ? `${content.intro} ${content.metaDescription}`
+    : content.intro;
 const origin = Astro.site?.origin ?? 'https://www.toolabs.web.id';
 const canonicalPath = toolPath(tool, locale);
 const alternatePath = toolPath(tool, locale === 'en' ? 'id' : 'en');
@@ -86,7 +91,6 @@ const schemas = [
               <span>{ui.common.noSignup}</span>
             </div>
             <h1>{content.h1}</h1>
-            <p class="lead">{content.intro}</p>
             <ul class="tool-badges">
               <li><Icon name="shield" size={14} />{ui.common.private}</li>
               <li><Icon name="bolt" size={14} />{ui.common.browserOnly}</li>
@@ -94,22 +98,35 @@ const schemas = [
             </ul>
           </header>
 
-          <ToolRunner
-            client:load
-            locale={locale}
-            toolId={tool.id}
-            engine={tool.engine}
-            accept={tool.accept}
-            maxFileMB={100}
-            sortable={tool.sortable ?? false}
-            defaults={tool.options}
-          />
+          {tool.comingSoon ? (
+            <div class="callout coming-soon-notice">
+              <Icon name="info" size={18} />
+              <strong>{locale === 'en' ? 'Coming soon' : 'Segera hadir'}</strong>
+            </div>
+          ) : (
+            <ToolRunner
+              client:load
+              locale={locale}
+              toolId={tool.id}
+              engine={tool.engine}
+              accept={tool.accept}
+              maxFileMB={100}
+              sortable={tool.sortable ?? false}
+              defaults={tool.options}
+              fixedFormat={tool.fixedFormat}
+            />
+          )}
 
           {adsenseSlots.tool && (
             <AdSlot slot={adsenseSlots.tool} label={ui.common.advertisement} />
           )}
 
-          <div class="tool-content">
+          <section class="content-section about-tool" id="about-tool">
+            <h2>{locale === 'en' ? `About ${toolDisplayName(tool, locale)}` : `Tentang ${toolDisplayName(tool, locale)}`}</h2>
+            <p>{aboutDescription}</p>
+          </section>
+
+          <div class="tool-content" hidden={tool.comingSoon}>
             <section class="answer-box" id="answer">
               <h2 class="answer-question">{content.answerQuestion}</h2>
               <p>{content.shortAnswer}</p>
@@ -230,22 +247,11 @@ const schemas = [
           <div class="side-card">
             <h2>{ui.tool.relatedTitle}</h2>
             <ul>
-              {related.slice(0, 5).map((item) => (
+              {categoryTools.map((item) => (
                 <li><a href={toolPath(item, locale)}>{item.locale[locale].h1}</a></li>
               ))}
             </ul>
           </div>
-
-          {categoryTools.length > 0 && (
-            <div class="side-card">
-              <h2>{categories[tool.category].name[locale]}</h2>
-              <ul>
-                {categoryTools.slice(0, 5).map((item) => (
-                  <li><a href={toolPath(item, locale)}>{item.locale[locale].h1}</a></li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           <div class="side-card">
             <h2>{ui.common.guides}</h2>

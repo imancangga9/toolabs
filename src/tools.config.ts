@@ -1,8 +1,8 @@
 import type { Locale } from './config';
 import { convertTools } from './content/tools/convert';
-import { imageTools } from './content/tools/image';
+import { commonImageAccept, imageTools } from './content/tools/image';
 
-export type Category = 'image' | 'pdf' | 'convert';
+export type Category = 'compress' | 'pdf' | 'convert' | 'edit';
 
 export type EngineId =
   | 'image-compress'
@@ -44,6 +44,10 @@ export type ToolOptions = {
   ranges?: string;
   angle?: 90 | 180 | 270;
   scale?: number;
+  circle?: boolean;
+  outputExtension?: 'jpg' | 'jpeg' | 'png' | 'webp';
+  autoGifHeicJpg?: boolean;
+  photoPreset?: string;
 };
 
 export type ToolFaq = { q: string; a: string };
@@ -79,6 +83,9 @@ export type Tool = {
   icon: string;
   featured?: number;
   sortable?: boolean;
+  /** Locks the output format to the input extension so "compress" never converts. */
+  fixedFormat?: boolean;
+  comingSoon?: boolean;
   options: ToolOptions;
   related: string[];
   updatedAt: string;
@@ -94,33 +101,71 @@ export const categories: Record<
     hub: Record<Locale, { title: string; h1: string; metaDescription: string; intro: string[]; faq: ToolFaq[] }>;
   }
 > = {
-  image: {
-    slug: { en: 'image', id: 'gambar' },
-    name: { en: 'Image', id: 'Gambar' },
-    icon: 'image',
+  compress: {
+    slug: { en: 'compress', id: 'kompres' },
+    name: { en: 'Compress', id: 'Kompres' },
+    icon: 'compress',
     hub: {
       en: {
-        title: 'Free Image Tools — Compress, Resize & Convert',
-        h1: 'Image tools that run in your browser',
-        metaDescription: 'Compress, resize, and convert JPG, PNG, WebP, and HEIC images for free.',
-        intro: ['Image tools run locally in the browser.'],
+        title: 'Free Compress Tools — JPG, PNG, WebP, HEIC, GIF',
+        h1: 'Compress images without changing the file extension',
+        metaDescription:
+          'Compress JPG, PNG, WebP, HEIC, and GIF to a target size while keeping the same format. Runs in your browser, free, no upload.',
+        intro: [
+          'Smaller file, same extension. A 2 MB PNG becomes a 100 KB PNG, and a JPG stays a JPG. Nothing is renamed, nothing is converted behind your back, and the file never leaves your device. Use Compress Image when you want one tool for any format, or open the tool that names the extension you are looking for — Compress PNG, Compress JPG, Compress WebP, Compress HEIC, and Compress GIF. Resize Image and the 3×4 photo tool sit on this page too, because a size limit usually comes with a pixel limit.',
+        ],
         faq: [
-          { q: 'Are the images uploaded?', a: 'No.' },
-          { q: 'Which formats are supported?', a: 'JPG, PNG, WebP, and HEIC.' },
-          { q: 'How to reach exact file size?', a: 'Use Compress Image.' },
-          { q: 'Does compression remove EXIF?', a: 'Yes.' },
+          {
+            q: 'Does compressing change my file format?',
+            a: 'No. The output keeps the extension of the input, so a PNG stays a PNG and a JPG stays a JPG. Only the HEIC and GIF tools write JPG, because browsers cannot encode those two formats; the output file is named accordingly.',
+          },
+          {
+            q: 'Which tool should I pick?',
+            a: 'Compress Image accepts JPG, PNG, and WebP in one dropzone and is the safest default. If you already know the extension, use the tool with that name — it locks the output to your format and pre-fills a sensible target size.',
+          },
+          {
+            q: 'What target size should I use?',
+            a: '100 KB for job portals and campus forms, 200 KB for CPNS and ID photos, 500 KB for marketplaces. Aim slightly below the number the portal states, because systems count kilobytes differently.',
+          },
+          {
+            q: 'Are my files uploaded?',
+            a: 'No. Files are read with the File API, decoded and re-encoded inside a Web Worker on your device, and downloaded from a local Blob URL. There is no upload endpoint.',
+          },
+          {
+            q: 'What if the target cannot be reached?',
+            a: 'Toolabs shows the smallest result it could produce and says the target was missed, instead of silently returning a bad file. For PNG, which is lossless, the tool reduces pixel dimensions rather than quality.',
+          },
         ],
       },
       id: {
-        title: 'Tool Gambar Gratis — Kompres, Ubah Ukuran, Konversi',
-        h1: 'Tool gambar yang berjalan di browser Anda',
-        metaDescription: 'Kompres, ubah ukuran, dan konversi gambar JPG, PNG, WebP, dan HEIC gratis.',
-        intro: ['Tool gambar berjalan secara lokal di browser.'],
+        title: 'Tool Kompres Gratis — JPG, PNG, WebP, HEIC, GIF',
+        h1: 'Kompres gambar tanpa mengubah ekstensi file',
+        metaDescription:
+          'Kompres JPG, PNG, WebP, HEIC, dan GIF ke ukuran target sambil mempertahankan format asli. Berjalan di browser, gratis, tanpa unggah.',
+        intro: [
+          'Ukuran lebih kecil, ekstensi sama. PNG 2 MB menjadi PNG 100 KB, dan JPG tetap JPG. Tidak ada yang diganti nama, tidak ada yang dikonversi diam-diam, dan file tidak pernah meninggalkan perangkat Anda. Gunakan Kompres Gambar jika ingin satu tool untuk semua format, atau buka tool yang menyebut ekstensi yang Anda cari — Kompres PNG, Kompres JPG, Kompres WebP, Kompres HEIC, dan Kompres GIF. Ubah Ukuran Gambar dan foto 3×4 juga ada di halaman ini, karena batas ukuran biasanya berpasangan dengan batas piksel.',
+        ],
         faq: [
-          { q: 'Apakah gambar diunggah?', a: 'Tidak.' },
-          { q: 'Format apa yang didukung?', a: 'JPG, PNG, WebP, dan HEIC.' },
-          { q: 'Bagaimana mencapai ukuran file yang tepat?', a: 'Gunakan Kompres Gambar.' },
-          { q: 'Apakah kompresi menghapus EXIF?', a: 'Ya.' },
+          {
+            q: 'Apakah kompresi mengubah format file?',
+            a: 'Tidak. Keluaran mempertahankan ekstensi dari file masukan, jadi PNG tetap PNG dan JPG tetap JPG. Hanya tool HEIC dan GIF yang menulis JPG, karena browser tidak bisa mengodekan kedua format tersebut; nama file hasilnya menyesuaikan.',
+          },
+          {
+            q: 'Sebaiknya memilih tool yang mana?',
+            a: 'Kompres Gambar menerima JPG, PNG, dan WebP sekaligus dan merupakan pilihan paling aman. Jika ekstensinya sudah jelas, gunakan tool dengan nama tersebut — keluarannya dikunci ke format itu dan target ukurannya sudah terisi.',
+          },
+          {
+            q: 'Target ukuran berapa yang tepat?',
+            a: '100 KB untuk portal lamaran dan formulir kampus, 200 KB untuk CPNS dan foto identitas, 500 KB untuk marketplace. Bidik sedikit di bawah angka yang ditulis portal, karena sistem menghitung kilobyte dengan cara berbeda.',
+          },
+          {
+            q: 'Apakah file saya diunggah?',
+            a: 'Tidak. File dibaca lewat File API, didekode dan dikodekan ulang di dalam Web Worker pada perangkat Anda, lalu diunduh dari Blob URL lokal. Tidak ada endpoint unggahan.',
+          },
+          {
+            q: 'Bagaimana jika target tidak tercapai?',
+            a: 'Toolabs menampilkan hasil terkecil yang bisa dihasilkan dan menyatakan bahwa target tidak terpenuhi, alih-alih diam-diam mengembalikan file buruk. Untuk PNG yang lossless, tool memperkecil dimensi piksel, bukan kualitas.',
+          },
         ],
       },
     },
@@ -183,6 +228,39 @@ export const categories: Record<
           { q: 'Bisakah mengonversi beberapa gambar sekaligus?', a: 'Ya.' },
           { q: 'Apakah dukungan HEIC tersedia di semua browser?', a: 'Via WebAssembly.' },
           { q: 'Apakah gambar animasi didukung?', a: 'Tidak, hanya frame pertama.' },
+        ],
+      },
+    },
+  },
+  edit: {
+    slug: { en: 'edit', id: 'edit-gambar' },
+    name: { en: 'Edit Image', id: 'Edit Gambar' },
+    icon: 'image',
+    hub: {
+      en: {
+        title: 'Free Image Editing Tools — Resize, Crop & Rotate',
+        h1: 'Edit images in your browser',
+        metaDescription: 'Resize, crop, and rotate images locally in your browser. Free, private, and no upload.',
+        intro: ['Resize, crop, and rotate images in your browser.'],
+        faq: [
+          { q: 'Are my images uploaded?', a: 'No. Editing runs locally in your browser.' },
+          { q: 'Can I crop to an exact size?', a: 'Yes. Enter the desired width and height, then choose cover to crop.' },
+          { q: 'Can I resize photos for printing?', a: 'Yes. Choose a photo or print-size preset.' },
+          { q: 'Can I rotate by 90 degrees?', a: 'Yes. Choose a 90, 180, or 270 degree rotation.' },
+          { q: 'Does editing overwrite my original?', a: 'No. Each edit creates a separate output file.' },
+        ],
+      },
+      id: {
+        title: 'Tool Edit Gambar Gratis — Ubah Ukuran, Crop & Putar',
+        h1: 'Edit gambar di browser',
+        metaDescription: 'Ubah ukuran, crop, dan putar gambar secara lokal di browser. Gratis, privat, tanpa upload.',
+        intro: ['Ubah ukuran, crop, dan putar gambar di browser.'],
+        faq: [
+          { q: 'Apakah gambar saya diunggah?', a: 'Tidak. Pengeditan berjalan secara lokal di browser.' },
+          { q: 'Bisakah crop dengan ukuran presisi?', a: 'Bisa. Masukkan lebar dan tinggi, lalu pilih mode cover untuk crop.' },
+          { q: 'Bisakah mengubah ukuran foto untuk cetak?', a: 'Bisa. Pilih preset ukuran foto atau cetak.' },
+          { q: 'Bisakah memutar 90 derajat?', a: 'Bisa. Pilih rotasi 90, 180, atau 270 derajat.' },
+          { q: 'Apakah pengeditan menimpa file asli?', a: 'Tidak. Setiap edit membuat file hasil terpisah.' },
         ],
       },
     },
@@ -255,23 +333,23 @@ const configuredTools: Tool[] = [
   {
     id: 'compress-image',
     slug: { en: 'compress-image', id: 'kompres-gambar' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
-    accept: ['image/jpeg', 'image/png', 'image/webp'],
+    accept: commonImageAccept,
     icon: 'compress',
     featured: 1,
-    options: { targetKB: 200, outputFormat: 'auto', quality: 0.85 },
-    related: ['compress-jpg-to-100kb', 'compress-jpg-to-200kb', 'compress-png', 'resize-image', 'photo-3x4'],
+    options: { targetKB: 200, outputFormat: 'auto', quality: 0.85, autoGifHeicJpg: true },
+    related: ['compress-jpg', 'compress-png', 'compress-webp', 'compress-jpg-to-100kb', 'compress-heic'],
     updatedAt: '2026-10-23',
     locale: {
       en: {
-        title: 'Compress Image Online Free — JPG, PNG, WebP',
-        h1: 'Compress images without uploading them',
-        metaDescription: 'Compress JPG, PNG, and WebP images to a target size in your browser. See the exact before and after size.',
+        title: 'Compress Image Online Free — Any Image Format',
+        h1: 'Compress images to your chosen format',
+        metaDescription: 'Compress common image formats in your browser. Choose JPG, JPEG, PNG, or WebP output. GIF and HEIC export as JPG.',
         answerQuestion: 'How do I compress an image to an exact size?',
-        shortAnswer: 'Drop a JPG, PNG, or WebP image, set a target such as 100 KB, and Toolabs searches for the highest quality that fits.',
+        shortAnswer: 'Add an image in a supported format, choose an output format, and set a target size. GIF and HEIC automatically use JPG output, with the format selector locked. Toolabs processes locally and shows the result size and dimensions before download. The original remains unchanged.',
         intro: 'Most compressors give you a quality slider and hope for the best.',
-        steps: ['Drop a JPG, PNG, or WebP file.', 'Enter a target size in KB.', 'Press Process file.', 'Download the compressed image.'],
+        steps: ['Add an image file in a supported format.', 'Enter a target size in KB.', 'Choose JPG, JPEG, PNG, or WebP output, unless the GIF/HEIC source locks output to JPG.', 'Press Process file and review the result.', 'Download the compressed image.'],
         benefits: ['You control the exact size limit.'],
         useCases: ['Shrinking a profile photo for a job portal.'],
         faq: [
@@ -285,13 +363,13 @@ const configuredTools: Tool[] = [
         tip: 'If you only need to change pixel dimensions, use Resize Image instead.',
       },
       id: {
-        title: 'Kompres Gambar Online Gratis — JPG, PNG, WebP',
-        h1: 'Kompres gambar tanpa upload ke server',
-        metaDescription: 'Kompres gambar JPG, PNG, dan WebP ke ukuran target di browser. Lihat ukuran sebelum dan sesudah.',
+        title: 'Kompres Gambar Online Gratis — Semua Format',
+        h1: 'Kompres gambar ke format pilihan',
+        metaDescription: 'Kompres berbagai format gambar di browser. Pilih JPG, JPEG, PNG, atau WebP. GIF dan HEIC otomatis menjadi JPG.',
         answerQuestion: 'Bagaimana cara kompres gambar ke ukuran tertentu?',
-        shortAnswer: 'Letakkan gambar JPG, PNG, atau WebP, tentukan target seperti 100 KB, lalu Toolabs mencari kualitas tertinggi yang muat.',
+        shortAnswer: 'Tambahkan gambar dalam format yang didukung, pilih format keluaran, dan tentukan target ukuran. GIF dan HEIC otomatis memakai JPG dan pilihan formatnya terkunci. Toolabs memproses secara lokal, lalu menampilkan ukuran file dan dimensi hasil sebelum diunduh. File asli tetap utuh.',
         intro: 'Sebagian besar alat kompres hanya memberi slider kualitas dan berharap hasilnya cocok.',
-        steps: ['Letakkan file JPG, PNG, atau WebP, atau pilih dari perangkat Anda.', 'Masukkan target ukuran dalam KB.', 'Tekan Proses file.', 'Unduh gambar hasil kompres.'],
+        steps: ['Tambahkan file gambar dalam format yang didukung.', 'Masukkan target ukuran dalam KB.', 'Pilih JPG, JPEG, PNG, atau WebP, kecuali sumber GIF/HEIC yang mengunci keluaran ke JPG.', 'Tekan Proses file dan periksa hasilnya.', 'Unduh gambar hasil kompres.'],
         benefits: ['Anda mengatur batas ukuran yang pasti.'],
         useCases: ['Memperkecil foto profil untuk portal lamaran.'],
         faq: [
@@ -309,11 +387,12 @@ const configuredTools: Tool[] = [
   {
     id: 'compress-jpg-to-100kb',
     slug: { en: 'compress-jpg-to-100kb', id: 'kompres-jpg-100kb' },
-    category: 'image',
+    category: 'compress',
     engine: 'image-compress',
     accept: ['image/jpeg'],
     icon: 'target',
-    featured: 2,
+    featured: 5,
+    fixedFormat: true,
     options: { targetKB: 100, outputFormat: 'image/jpeg' },
     related: ['compress-image', 'compress-jpg-to-200kb', 'resize-image', 'photo-3x4'],
     updatedAt: '2026-10-21',
@@ -616,6 +695,21 @@ export const tools: Tool[] = [
   ...imageTools.filter((tool) => !configuredToolIds.has(tool.id)),
   ...convertTools.filter((tool) => !configuredToolIds.has(tool.id)),
 ];
+
+export const imageToolGroups = [
+  {
+    name: { en: 'Compress Image', id: 'Kompres Gambar' },
+    toolIds: ['compress-image', 'compress-jpg', 'compress-jpeg', 'compress-png', 'compress-webp', 'compress-gif', 'compress-heic'],
+  },
+  {
+    name: { en: 'Convert Image', id: 'Konversi Gambar' },
+    toolIds: ['image-to-jpg', 'image-to-jpeg', 'image-to-png', 'image-to-webp', 'image-to-heic', 'gif-to-jpg', 'heic-to-jpg'],
+  },
+  {
+    name: { en: 'Edit Image', id: 'Edit Gambar' },
+    toolIds: ['resize-image', 'resize-photo', 'resize-photo-r', 'image-crop', 'image-crop-circle', 'image-rotate', 'image-merge'],
+  },
+] as const;
 
 const byId = new Map(tools.map((tool) => [tool.id, tool]));
 

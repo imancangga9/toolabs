@@ -197,6 +197,8 @@ export type ToolRunnerProps = {
   maxFileMB: number;
   sortable?: boolean;
   defaults?: ToolOptions;
+  /** Keeps the output extension identical to the input (no silent conversion). */
+  fixedFormat?: boolean;
 };
 
 function newId(): string {
@@ -288,6 +290,7 @@ export default function ToolRunner({
   maxFileMB,
   sortable = false,
   defaults = {},
+  fixedFormat = false,
 }: ToolRunnerProps) {
   const ui = getUi(locale);
   const isQrGenerator = engine === 'qr-generator';
@@ -1144,7 +1147,27 @@ export default function ToolRunner({
                   <span>{ui.options.title}</span>
                 </div>
 
-                <OptionsPanel engine={engine} locale={locale} options={options} onChange={setOptions} />
+                <OptionsPanel
+                  engine={engine}
+                  toolId={toolId}
+                  locale={locale}
+                  options={options}
+                  fixedFormat={fixedFormat}
+                  formatLocked={
+                    toolId === 'compress-image' && files.length > 0 && files.every(({ file }) => {
+                      const extension = extensionOf(file.name);
+                      return (
+                        file.type === 'image/gif' ||
+                        file.type === 'image/heic' ||
+                        file.type === 'image/heif' ||
+                        extension === 'gif' ||
+                        extension === 'heic' ||
+                        extension === 'heif'
+                      );
+                    })
+                  }
+                  onChange={setOptions}
+                />
               </>
             )}
 

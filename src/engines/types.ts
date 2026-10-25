@@ -2,10 +2,7 @@ import type { EngineId, ToolOptions } from '../tools.config';
 
 export type WarningCode =
   | 'low-quality'
-  | 'dimensions-reduced'
   | 'target-unreachable'
-  | 'png-lossless'
-  | 'output-larger'
   | 'heic-first-frame'
   | 'pages-clamped'
   | 'qr-logo-large'

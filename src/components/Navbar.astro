@@ -1,7 +1,7 @@
 ---
 import type { Locale } from '../config';
 import { getUi } from '../i18n/ui';
-import { categories, categoryPath, getToolsByCategory, type Category } from '../tools.config';
+import { categories, categoryPath, getToolsByCategory, imageToolGroups, tools, type Category } from '../tools.config';
 import { toolDisplayName } from '../lib/display';
 import Icon from './Icon.astro';
 
@@ -17,7 +17,7 @@ const allTools = `${home}#tools`;
 const guides = locale === 'en' ? '/guides' : '/id/panduan';
 const otherLocale = locale === 'en' ? 'id' : 'en';
 const languageHref = alternatePath ?? (locale === 'en' ? '/id/' : '/');
-const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
+const categoryKeys: Category[] = ['pdf'];
 ---
 
 <header class="site-header">
@@ -48,6 +48,40 @@ const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
         <li class="nav-item">
           <a class="nav-link" href={allTools}>{ui.nav.allTools}</a>
         </li>
+        <li class="nav-item" data-nav-item>
+          <a class="nav-link" href={allTools}>Image Tools</a>
+          <button
+            class="mega-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-label="Open Image Tools"
+            data-mega-toggle
+          >
+            <Icon name="chevron-down" size={14} />
+          </button>
+          <div class="mega image-mega" data-mega>
+            <div class="mega-header">
+              <span class="mega-kicker">Image Tools</span>
+              <a class="mega-all" href={allTools}>{ui.nav.viewAll} →</a>
+            </div>
+            <div class="image-mega-grid">
+              {imageToolGroups.map((group) => (
+                <section class="image-mega-group">
+                  <h3>{group.name[locale]}</h3>
+                  {group.toolIds.map((id) => {
+                    const tool = tools.find((item) => item.id === id);
+                    if (!tool) return null;
+                    return (
+                      <a class="image-mega-link" href={locale === 'en' ? `/${tool.slug.en}` : `/id/${tool.slug.id}`}>
+                        {toolDisplayName(tool, locale)}
+                      </a>
+                    );
+                  })}
+                </section>
+              ))}
+            </div>
+          </div>
+        </li>
         {categoryKeys.map((category) => {
           const cat = categories[category];
           const catTools = getToolsByCategory(category)
@@ -77,7 +111,6 @@ const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
                       <span class="mega-icon"><Icon name={tool.icon} size={17} /></span>
                       <span class="mega-copy">
                         <strong>{toolDisplayName(tool, locale)}</strong>
-                        <small>{tool.locale[locale].metaDescription.slice(0, 78)}…</small>
                       </span>
                     </a>
                   ))}
@@ -208,7 +241,7 @@ const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
   // Search
   type SearchTool = {
     id: string;
-    category: 'image' | 'pdf' | 'convert';
+    category: 'compress' | 'pdf' | 'convert' | 'edit';
     title: Record<'en' | 'id', string>;
     path: Record<'en' | 'id', string>;
     keywords: Record<'en' | 'id', string[]>;
@@ -315,7 +348,8 @@ const categoryKeys: Category[] = ['image', 'pdf', 'convert'];
       link.href = tool.path[locale];
       const icon = document.createElement('span');
       icon.className = 'search-result-icon';
-      icon.textContent = tool.category === 'image' ? 'IMG' : tool.category === 'pdf' ? 'PDF' : 'CVT';
+      icon.textContent =
+        tool.category === 'compress' ? 'CMP' : tool.category === 'pdf' ? 'PDF' : tool.category === 'edit' ? 'IMG' : 'CVT';
       const copy = document.createElement('span');
       const strong = document.createElement('strong');
       strong.textContent = tool.title[locale];

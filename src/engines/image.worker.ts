@@ -54,6 +54,8 @@ async function encode(
   mime: string,
   quality: number | undefined,
   fit: FitMode = 'stretch',
+  angle = 0,
+  circle = false,
 ): Promise<Blob> {
   if (typeof OffscreenCanvas === 'undefined') {
     throw new EngineError('worker', 'OffscreenCanvas is not available');
@@ -71,10 +73,22 @@ async function encode(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
 
+  if (circle) {
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, Math.PI * 2);
+    ctx.clip();
+  }
+
   const sourceWidth = bitmap.width;
   const sourceHeight = bitmap.height;
 
-  if (fit === 'stretch') {
+  if (angle) {
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate((angle * Math.PI) / 180);
+    const rotatedWidth = angle % 180 ? height : width;
+    const rotatedHeight = angle % 180 ? width : height;
+    ctx.drawImage(bitmap, -rotatedWidth / 2, -rotatedHeight / 2, rotatedWidth, rotatedHeight);
+  } else if (fit === 'stretch') {
     ctx.drawImage(bitmap, 0, 0, width, height);
   } else {
     const scale =
@@ -127,11 +141,14 @@ async function searchQuality(
   options: ToolOptions,
   report: (progress: number) => void,
   progressBase: number,
+  fit: FitMode = 'stretch',
+  angle = 0,
+  circle = false,
 ): Promise<{ best: Candidate | null; smallest: Candidate | null }> {
   const maxQuality = Math.min(Math.max(options.quality ?? 0.92, 0.4), 0.95);
   const minQuality = 0.3;
 
-  const first = await encode(bitmap, width, height, mime, maxQuality);
+  const first = await encode(bitmap, width, height, mime, maxQuality, fit, angle, circle);
   report(Math.min(0.94, progressBase + 0.02));
   if (first.size <= targetBytes) {
     return {
@@ -140,7 +157,7 @@ async function searchQuality(
     };
   }
 
-  const lowest = await encode(bitmap, width, height, mime, minQuality);
+  const lowest = await encode(bitmap, width, height, mime, minQuality, fit, angle, circle);
   report(Math.min(0.94, progressBase + 0.04));
   let smallest: Candidate = {
     blob: lowest,
@@ -155,7 +172,7 @@ async function searchQuality(
     let best: Candidate = { blob: lowest, mime, quality: minQuality, width, height };
     for (let i = 0; i < 5; i += 1) {
       const quality = (low + high) / 2;
-      const blob = await encode(bitmap, width, height, mime, quality);
+      const blob = await encode(bitmap, width, height, mime, quality, fit, angle, circle);
       report(Math.min(0.94, progressBase + 0.05 + i * 0.01));
       if (blob.size <= targetBytes) {
         best = { blob, mime, quality, width, height };
@@ -176,7 +193,10 @@ async function processCompress(
   options: ToolOptions,
   report: (progress: number) => void,
 ): Promise<{ blob: Blob; meta: OutputMeta }> {
-  const mime = resolveMime(file.type, options.outputFormat);
+  const isGif = file.type === 'image/gif' || /\.gif$/i.test(file.name);
+  const mime = options.autoGifHeicJpg && isGif
+    ? 'image/jpeg'
+    : resolveMime(file.type, options.outputFormat);
   const targetBytes = options.targetKB && options.targetKB > 0 ? options.targetKB * 1024 : undefined;
   const warnings: WarningCode[] = [];
 
@@ -200,9 +220,6 @@ async function processCompress(
     let finalBlob = blob;
     if (mime === 'image/png' && blob.size > file.size) {
       finalBlob = file;
-      warnings.push('png-lossless', 'output-larger');
-    } else if (blob.size > file.size) {
-      warnings.push('output-larger');
     }
 
     return {
@@ -218,8 +235,6 @@ async function processCompress(
       },
     };
   }
-
-  if (mime === 'image/png') warnings.push('png-lossless');
 
   const baseWidth = width;
   const baseHeight = height;
@@ -284,11 +299,9 @@ async function processCompress(
 
   const targetReached = finalCandidate.blob.size <= targetBytes;
   if (!targetReached) warnings.push('target-unreachable');
-  if (chosen && chosen.width < baseWidth) warnings.push('dimensions-reduced');
   if (finalCandidate.quality !== undefined && finalCandidate.quality < 0.55) {
     warnings.push('low-quality');
   }
-  if (finalCandidate.blob.size > file.size) warnings.push('output-larger');
 
   report(1);
   return {
@@ -341,7 +354,6 @@ async function processConvert(
     const chosen = best ?? smallest;
     if (!chosen) throw new EngineError('decode', 'Could not encode the image');
     if (chosen.blob.size > targetBytes) warnings.push('target-unreachable');
-    if (chosen.blob.size > file.size) warnings.push('output-larger');
     report(1);
     return {
       blob: chosen.blob,
@@ -361,7 +373,6 @@ async function processConvert(
 
   report(0.5);
   const blob = await encode(bitmap, width, height, mime, quality);
-  if (blob.size > file.size) warnings.push('output-larger');
   report(1);
   return {
     blob,
@@ -396,6 +407,9 @@ async function processResize(
     width = Math.max(1, Math.round((options.height / bitmap.height) * bitmap.width));
   }
 
+  const angle = options.angle ?? 0;
+  if (angle === 90 || angle === 270) [width, height] = [height, width];
+
   if (width < 1 || height < 1) throw new EngineError('unsupported', 'Invalid dimensions');
 
   const targetBytes = options.targetKB && options.targetKB > 0 ? options.targetKB * 1024 : undefined;
@@ -411,12 +425,14 @@ async function processResize(
       options,
       report,
       0.2,
+      fit,
+      angle,
+      options.circle,
     );
     const chosen = best ?? smallest;
     if (!chosen) throw new EngineError('decode', 'Could not encode the image');
     if (chosen.blob.size > targetBytes) warnings.push('target-unreachable');
     if (chosen.quality !== undefined && chosen.quality < 0.55) warnings.push('low-quality');
-    if (chosen.blob.size > file.size) warnings.push('output-larger');
     report(1);
     return {
       blob: chosen.blob,
@@ -435,9 +451,8 @@ async function processResize(
   }
 
   report(0.4);
-  const blob = await encode(bitmap, width, height, mime, quality, fit);
+  const blob = await encode(bitmap, width, height, mime, quality, fit, angle, options.circle);
   if (targetBytes && blob.size > targetBytes) warnings.push('target-unreachable');
-  if (blob.size > file.size) warnings.push('output-larger');
   report(1);
   return {
     blob,

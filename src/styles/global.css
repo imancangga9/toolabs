@@ -415,6 +415,40 @@ button {
   gap: 4px;
 }
 
+.image-mega {
+  width: min(860px, calc(100vw - 32px));
+}
+
+.image-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  max-height: min(66vh, 620px);
+  overflow-y: auto;
+}
+
+.image-mega-group h3 {
+  margin: 0 0 8px;
+  padding: 0 8px 7px;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.82rem;
+}
+
+.image-mega-link {
+  display: block;
+  padding: 7px 8px;
+  border-radius: 6px;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.image-mega-link:hover {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
 .mega-link {
   display: flex;
   gap: 10px;
@@ -2959,6 +2993,12 @@ table.comparison tbody tr:last-child td {
 
   .mega-grid {
     grid-template-columns: 1fr;
+  }
+
+  .image-mega-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    max-height: 55vh;
   }
 
   .nav-actions {

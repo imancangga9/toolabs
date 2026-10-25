@@ -4,9 +4,10 @@ import { categories } from '../tools.config';
 
 const ACRONYMS: Record<string, string> = {
   jpg: 'JPG',
-  jpeg: 'JPG',
+  jpeg: 'JPEG',
   png: 'PNG',
   webp: 'WebP',
+  gif: 'GIF',
   heic: 'HEIC',
   heif: 'HEIF',
   pdf: 'PDF',
@@ -36,7 +37,9 @@ export function displayNameFromSlug(slug: string): string {
 }
 
 export function toolDisplayName(tool: Tool, locale: Locale): string {
-  return displayNameFromSlug(tool.slug[locale]);
+  const name = displayNameFromSlug(tool.slug[locale]);
+  if (!tool.comingSoon) return name;
+  return `${name} (${locale === 'id' ? 'Segera hadir' : 'Coming soon'})`;
 }
 
 export function categoryLabel(category: Category, locale: Locale): string {
