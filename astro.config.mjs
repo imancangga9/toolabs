@@ -7,6 +7,11 @@ export default defineConfig({
   site: process.env.SITE_URL || 'https://www.toolabs.web.id',
   output: 'static',
   trailingSlash: 'ignore',
+  // The Image hub was renamed to Compress; keep the old URLs working.
+  redirects: {
+    '/image': '/compress',
+    '/id/gambar': '/id/kompres',
+  },
   i18n: {
     locales: ['en', 'id'],
     defaultLocale: 'en',

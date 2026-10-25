@@ -38,7 +38,7 @@ const link = (en: string, id: string) => (locale === 'en' ? en : `/id/${id}`);
         <h2>{ui.footer.product}</h2>
         <ul>
           <li><a href={`${home}#tools`}>{ui.footer.allTools}</a></li>
-          {(['image', 'pdf', 'convert'] as const).map((category) => (
+          {(['compress', 'pdf', 'convert'] as const).map((category) => (
             <li><a href={categoryPath(category, locale)}>{ui.footer[`${category}Tools`]}</a></li>
           ))}
         </ul>

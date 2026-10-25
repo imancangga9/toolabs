@@ -1,4 +1,5 @@
 import type { Locale } from '../config';
+import { tools, type Category } from '../tools.config';
 
 export type GuideBlock = {
   heading?: string;
@@ -10,6 +11,8 @@ export type GuideBlock = {
 export type Guide = {
   id: string;
   slug: Record<Locale, string>;
+  /** Topic bucket used by the guide index filter and related-tool links. */
+  category: Category;
   title: string;
   h1: string;
   metaDescription: string;
@@ -27,6 +30,7 @@ export const guides: Guide[] = [
   {
     id: 'compress-image-100kb',
     slug: { en: 'compress-image-to-100kb', id: 'kompres-gambar-100kb' },
+    category: 'compress',
     title: 'How to Compress an Image to 100 KB (Without Ruining It)',
     h1: 'How to compress an image to 100 KB without ruining it',
     metaDescription:
@@ -133,6 +137,7 @@ export const guides: Guide[] = [
   {
     id: 'merge-pdf-no-upload',
     slug: { en: 'merge-pdf-without-uploading', id: 'gabung-pdf-tanpa-upload' },
+    category: 'pdf',
     title: 'How to Merge PDF Files Without Uploading Them',
     h1: 'How to merge PDF files without uploading them',
     metaDescription:
@@ -240,6 +245,7 @@ const idGuides: Guide[] = [
   {
     id: 'compress-image-100kb',
     slug: { en: 'compress-image-to-100kb', id: 'kompres-gambar-100kb' },
+    category: 'compress',
     title: 'Cara Kompres Gambar ke 100 KB Tanpa Merusak Kualitas',
     h1: 'Cara kompres gambar ke 100 KB tanpa merusak kualitas',
     metaDescription:
@@ -346,6 +352,7 @@ const idGuides: Guide[] = [
   {
     id: 'merge-pdf-no-upload',
     slug: { en: 'merge-pdf-without-uploading', id: 'gabung-pdf-tanpa-upload' },
+    category: 'pdf',
     title: 'Cara Gabung PDF Tanpa Mengunggahnya ke Server',
     h1: 'Cara gabung PDF tanpa mengunggahnya ke server',
     metaDescription:
@@ -471,3 +478,71 @@ export function guidePath(guide: Guide, locale: Locale): string {
 export function guidesIndexPath(locale: Locale): string {
   return locale === 'en' ? '/guides' : '/id/panduan';
 }
+
+const knownToolIds = new Set(tools.map((tool) => tool.id));
+
+function validateGuides(): void {
+  const idsByLocale: Record<Locale, Set<string>> = { en: new Set(), id: new Set() };
+
+  for (const locale of ['en', 'id'] as const) {
+    const seenSlugs = new Set<string>();
+
+    for (const guide of localizedGuides[locale]) {
+      if (idsByLocale[locale].has(guide.id)) {
+        throw new Error(`Duplicate ${locale} guide id "${guide.id}"`);
+      }
+      idsByLocale[locale].add(guide.id);
+
+      const slug = guide.slug[locale];
+      if (!slug) throw new Error(`Missing ${locale} slug for guide ${guide.id}`);
+      if (seenSlugs.has(slug)) throw new Error(`Duplicate ${locale} guide slug "${slug}"`);
+      seenSlugs.add(slug);
+
+      if (guide.blocks.length < 4) {
+        throw new Error(`Guide ${guide.id} (${locale}) needs at least 4 content blocks`);
+      }
+      if (guide.faq.length < 5) {
+        throw new Error(`Guide ${guide.id} (${locale}) needs at least 5 FAQ entries`);
+      }
+      if (guide.keyTakeaways.length < 3) {
+        throw new Error(`Guide ${guide.id} (${locale}) needs at least 3 key takeaways`);
+      }
+      if (!guide.relatedTools.length) {
+        throw new Error(`Guide ${guide.id} (${locale}) needs at least one related tool`);
+      }
+      if (Number.isNaN(Date.parse(`${guide.updatedAt}T00:00:00Z`))) {
+        throw new Error(`Guide ${guide.id} (${locale}) has an invalid updatedAt date`);
+      }
+
+      for (const toolId of guide.relatedTools) {
+        if (!knownToolIds.has(toolId)) {
+          throw new Error(`Guide ${guide.id} links to unknown tool "${toolId}"`);
+        }
+      }
+
+      const answerWords = guide.quickAnswer.split(/\s+/).filter(Boolean).length;
+      if (answerWords < 40 || answerWords > 70) {
+        console.warn(
+          `[aeo] guide ${guide.id} (${locale}) quick answer has ${answerWords} words (target 40–70)`,
+        );
+      }
+      if (guide.title.length > 65) {
+        console.warn(`[seo] guide ${guide.id} (${locale}) title is ${guide.title.length} chars`);
+      }
+      if (guide.metaDescription.length > 160) {
+        console.warn(
+          `[seo] guide ${guide.id} (${locale}) meta description is ${guide.metaDescription.length} chars`,
+        );
+      }
+    }
+  }
+
+  for (const id of idsByLocale.en) {
+    if (!idsByLocale.id.has(id)) console.warn(`[i18n] guide "${id}" has no Indonesian version`);
+  }
+  for (const id of idsByLocale.id) {
+    if (!idsByLocale.en.has(id)) console.warn(`[i18n] guide "${id}" has no English version`);
+  }
+}
+
+validateGuides();

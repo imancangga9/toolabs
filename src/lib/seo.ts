@@ -62,7 +62,7 @@ export function toolApplicationSchema(
 ): Record<string, unknown> {
   const content = tool.locale[locale];
   const category =
-    tool.category === 'image'
+    tool.category === 'compress'
       ? 'MultimediaApplication'
       : tool.category === 'pdf'
         ? 'BusinessApplication'

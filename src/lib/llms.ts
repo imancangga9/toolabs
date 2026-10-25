@@ -10,7 +10,7 @@ import {
 import { getGuides, guidePath, guidesIndexPath } from '../content/guides';
 import { staticPagePaths, staticPages, type StaticPageKey } from '../content/static-pages';
 
-const categoryOrder: Category[] = ['image', 'pdf', 'convert'];
+const categoryOrder: Category[] = ['compress', 'pdf', 'convert'];
 
 const text = {
   en: {

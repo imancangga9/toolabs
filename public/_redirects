@@ -1,0 +1,5 @@
+# Category rename: the Image hub is now the Compress hub.
+/image          /compress            301
+/image/         /compress            301
+/id/gambar      /id/kompres          301
+/id/gambar/     /id/kompres          301
