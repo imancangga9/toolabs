@@ -5,6 +5,7 @@ export type WarningCode =
   | 'target-unreachable'
   | 'heic-first-frame'
   | 'pages-clamped'
+  | 'no-text'
   | 'qr-logo-large'
   | 'qr-contrast'
   | 'qr-ecc-raised';

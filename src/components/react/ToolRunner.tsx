@@ -226,7 +226,7 @@ function canPreview(file: File): boolean {
   return file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
 }
 
-function errorMessage(code: string, ui: ReturnType<typeof getUi>, name: string): string {
+function errorMessage(code: string, ui: ReturnType<typeof getUi>, name: string, locale: Locale = 'en'): string {
   switch (code) {
     case 'unsupported':
       return ui.errors.unsupported.replace('{name}', name);
@@ -271,6 +271,10 @@ function errorMessage(code: string, ui: ReturnType<typeof getUi>, name: string):
       return ui.errors.qrGenerate;
     case 'invalid-range':
       return ui.errors.invalidRange;
+    case 'same-lang':
+      return locale === 'id' ? 'Bahasa sumber dan tujuan sama. Pilih bahasa tujuan yang berbeda.' : 'The source and target languages are the same. Choose a different target language.';
+    case 'translate':
+      return locale === 'id' ? 'Model terjemahan tidak bisa dimuat atau dijalankan. Periksa koneksi internet untuk mengunduh model, lalu coba lagi.' : 'The translation model could not be loaded or run. Check your internet connection for the model download and try again.';
     case 'worker':
       return ui.errors.worker;
     case 'canceled':
@@ -517,7 +521,7 @@ export default function ToolRunner({
     if (isQrGenerator) {
       const invalid = validateQrForm(qr);
       if (invalid) {
-        setError(errorMessage(invalid, ui, ''));
+        setError(errorMessage(invalid, ui, '', locale));
         return;
       }
       qrPayload = buildQrPayload(qr);
@@ -581,6 +585,7 @@ export default function ToolRunner({
         track('target_size_unreachable', { tool: toolId, target_kb: options.targetKB });
       }
     } catch (caught) {
+      if (import.meta.env.DEV) console.error('[toolabs] process failed', caught);
       const code =
         caught instanceof EngineError
           ? caught.code
@@ -588,7 +593,7 @@ export default function ToolRunner({
             ? String((caught as { code: string }).code)
             : 'generic';
       if (code !== 'canceled') {
-        setError(errorMessage(code, ui, files[0]?.file.name ?? ''));
+        setError(errorMessage(code, ui, files[0]?.file.name ?? '', locale));
         track('process_failed', { tool: toolId, code });
       }
       setPhase('ready');

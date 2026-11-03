@@ -9,6 +9,8 @@ import type {
   RunToolOptions,
 } from './types';
 import { convertPdfToJpg } from './pdf-to-jpg';
+import { convertPdfToWord } from './pdf-to-word';
+import type { LangCode } from './translate';
 import { generateQrCode } from './qr';
 
 export class EngineError extends Error {
@@ -421,6 +423,21 @@ export async function runTool({
       (index, progress) => onProgress?.(index, progress),
       signal,
     );
+  }
+
+  if (engine === 'pdf-to-word') {
+    return convertPdfToWord(files, (index, progress) => onProgress?.(index, progress), signal);
+  }
+
+  if (engine === 'pdf-translate') {
+    const source = (options.sourceLang ?? 'en') as LangCode;
+    const target = (options.targetLang ?? 'id') as LangCode;
+    if (source === target) throw new EngineError('same-lang');
+    return convertPdfToWord(files, undefined, signal, {
+      source,
+      target,
+      onProgress: (index, progress) => onProgress?.(index, progress),
+    });
   }
 
   if (engine === 'pdf-merge' || engine === 'image-to-pdf' || engine === 'pdf-split' || engine === 'pdf-rotate') {

@@ -21,6 +21,7 @@ import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../Breadcrumbs.astro';
 import Icon from '../Icon.astro';
 import ToolRunner from '../react/ToolRunner';
+import PdfEditor from '../react/PdfEditor';
 import AdSlot from '../AdSlot.astro';
 import { adsenseSlots } from '../../lib/ads';
 
@@ -103,6 +104,8 @@ const schemas = [
               <Icon name="info" size={18} />
               <strong>{locale === 'en' ? 'Coming soon' : 'Segera hadir'}</strong>
             </div>
+          ) : tool.engine === 'pdf-editor' ? (
+            <PdfEditor client:load locale={locale} />
           ) : (
             <ToolRunner
               client:load

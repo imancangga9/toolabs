@@ -17,6 +17,8 @@ export type EngineId =
   | 'pdf-rotate'
   | 'pdf-to-jpg'
   | 'pdf-to-word'
+  | 'pdf-editor'
+  | 'pdf-translate'
   | 'pdf-to-excel'
   | 'pdf-to-powerpoint'
   | 'pdf-to-text'
@@ -48,6 +50,8 @@ export type ToolOptions = {
   outputExtension?: 'jpg' | 'jpeg' | 'png' | 'webp';
   autoGifHeicJpg?: boolean;
   photoPreset?: string;
+  sourceLang?: string;
+  targetLang?: string;
 };
 
 export type ToolFaq = { q: string; a: string };
@@ -601,6 +605,168 @@ const configuredTools: Tool[] = [
     },
   },
   // ===== QR CODE GENERATOR =====
+  {
+    id: 'pdf-to-word',
+    slug: { en: 'pdf-to-word', id: 'pdf-ke-word' },
+    category: 'pdf',
+    engine: 'pdf-to-word',
+    accept: ['application/pdf', '.pdf'],
+    icon: 'pdf',
+    featured: 4,
+    options: {},
+    related: ['merge-pdf', 'compress-pdf'],
+    updatedAt: '2026-11-03',
+    locale: {
+      en: {
+        title: 'PDF to Word Converter Free — No Upload',
+        h1: 'Convert PDF to editable Word (DOCX) without uploading',
+        metaDescription: 'Convert PDF to Word (.docx) in your browser. Text becomes editable paragraphs. Free, no signup, and your file never leaves your device.',
+        answerQuestion: 'How do I convert a PDF to a Word document?',
+        shortAnswer: 'Add your PDF and press Process. Toolabs reads the text and its position on every page inside your browser, rebuilds it as editable paragraphs and headings, and gives you a .docx file that opens in Microsoft Word, Google Docs, and LibreOffice.',
+        intro: 'Toolabs reads the selectable text of your PDF, groups it into lines and paragraphs, and writes a standard DOCX file. Page size and page breaks are kept, and headings are detected from larger text. The conversion focuses on text: images, complex tables, and exact layouts are not reproduced, and scanned PDFs without a text layer need OCR first. Everything runs on your device, so contracts and personal documents are never uploaded.',
+        steps: ['Drop a PDF file or select it from your device.', 'Press Process files. Toolabs extracts the text locally.', 'Wait for the progress bar to finish.', 'Download the .docx file and open it in Word, Google Docs, or LibreOffice.'],
+        benefits: ['Your PDF is never uploaded to a server.', 'Text becomes editable paragraphs, not one text box per line.', 'Works with several PDFs in one batch.', 'Free, with no signup and no watermark.'],
+        useCases: ['Editing a contract or letter that only exists as a PDF.', 'Copying a report into a document you can reformat.', 'Reusing text from a CV or application form.'],
+        faq: [
+          { q: 'Is my PDF uploaded to a server?', a: 'No. The file is read and converted by your browser on your device, and the DOCX is created locally. Toolabs never receives it.' },
+          { q: 'Will the layout look exactly like the PDF?', a: 'Not exactly. Toolabs rebuilds paragraphs, headings, and page breaks from the text positions. Images, multi-column pages, and complex tables are not reproduced, so expect to adjust the formatting.' },
+          { q: 'Why is my Word file empty or almost empty?', a: 'The PDF is probably a scan or a photo, so it has no selectable text. Toolabs shows a warning in that case. Scanned pages need OCR, which this tool does not do.' },
+          { q: 'Can I convert a password-protected PDF?', a: 'No. Remove the password in your PDF reader, save a copy, and convert that copy.' },
+          { q: 'Which programs open the DOCX file?', a: 'Microsoft Word, Google Docs, LibreOffice Writer, Apple Pages, and most other word processors.' },
+          { q: 'Is there a file size limit?', a: 'There is no upload limit because nothing is uploaded, but very large PDFs depend on your device memory.' },
+        ],
+        tip: 'For the cleanest result, use a PDF exported from Word or another editor. Text-based PDFs convert far better than scans.',
+      },
+      id: {
+        title: 'PDF ke Word Gratis — Tanpa Upload',
+        h1: 'Ubah PDF ke Word (DOCX) yang bisa diedit tanpa upload',
+        metaDescription: 'Ubah PDF ke Word (.docx) di browser. Teks menjadi paragraf yang bisa diedit. Gratis, tanpa daftar, file tidak keluar dari perangkat Anda.',
+        answerQuestion: 'Bagaimana cara mengubah PDF menjadi dokumen Word?',
+        shortAnswer: 'Tambahkan PDF lalu tekan Proses. Toolabs membaca teks beserta posisinya di setiap halaman langsung di browser, menyusunnya kembali menjadi paragraf dan judul yang bisa diedit, lalu memberi file .docx yang bisa dibuka di Microsoft Word, Google Docs, dan LibreOffice.',
+        intro: 'Toolabs membaca teks PDF yang bisa dipilih, mengelompokkannya menjadi baris dan paragraf, lalu menulis file DOCX standar. Ukuran halaman dan pemisah halaman dipertahankan, dan judul dikenali dari teks yang lebih besar. Konversi berfokus pada teks: gambar, tabel kompleks, dan tata letak persis tidak direproduksi, dan PDF hasil pindai tanpa lapisan teks perlu OCR lebih dulu. Semua berjalan di perangkat Anda, sehingga kontrak dan dokumen pribadi tidak pernah diunggah.',
+        steps: ['Letakkan file PDF atau pilih dari perangkat Anda.', 'Tekan Proses file. Toolabs mengekstrak teks secara lokal.', 'Tunggu hingga bilah progres selesai.', 'Unduh file .docx lalu buka di Word, Google Docs, atau LibreOffice.'],
+        benefits: ['PDF Anda tidak pernah diunggah ke server.', 'Teks menjadi paragraf yang bisa diedit, bukan satu kotak teks per baris.', 'Bisa memproses beberapa PDF sekaligus.', 'Gratis, tanpa daftar dan tanpa watermark.'],
+        useCases: ['Mengedit kontrak atau surat yang hanya tersedia dalam PDF.', 'Menyalin laporan ke dokumen yang bisa diformat ulang.', 'Memakai ulang teks dari CV atau formulir lamaran.'],
+        faq: [
+          { q: 'Apakah PDF saya diunggah ke server?', a: 'Tidak. File dibaca dan dikonversi oleh browser di perangkat Anda, dan DOCX dibuat secara lokal. Toolabs tidak pernah menerimanya.' },
+          { q: 'Apakah tampilannya persis sama dengan PDF?', a: 'Tidak persis. Toolabs menyusun ulang paragraf, judul, dan pemisah halaman dari posisi teks. Gambar, halaman multi-kolom, dan tabel kompleks tidak direproduksi, jadi format perlu dirapikan.' },
+          { q: 'Mengapa file Word saya kosong atau hampir kosong?', a: 'PDF kemungkinan hasil pindai atau foto, sehingga tidak punya teks yang bisa dipilih. Toolabs menampilkan peringatan pada kasus ini. Halaman pindai membutuhkan OCR, yang tidak tersedia di tool ini.' },
+          { q: 'Bisakah mengonversi PDF yang diberi kata sandi?', a: 'Tidak. Hapus kata sandi di pembaca PDF, simpan salinannya, lalu konversi salinan tersebut.' },
+          { q: 'Program apa yang bisa membuka file DOCX?', a: 'Microsoft Word, Google Docs, LibreOffice Writer, Apple Pages, dan sebagian besar pengolah kata lain.' },
+          { q: 'Apakah ada batas ukuran file?', a: 'Tidak ada batas unggah karena tidak ada yang diunggah, tetapi PDF yang sangat besar bergantung pada memori perangkat Anda.' },
+        ],
+        tip: 'Untuk hasil terbaik, gunakan PDF yang diekspor dari Word atau editor lain. PDF berbasis teks jauh lebih baik daripada hasil pindai.',
+      },
+    },
+  },
+  {
+    id: 'edit-pdf',
+    slug: { en: 'edit-pdf', id: 'edit-pdf' },
+    category: 'pdf',
+    engine: 'pdf-editor',
+    accept: ['application/pdf', '.pdf'],
+    icon: 'pdf',
+    featured: 5,
+    options: {},
+    related: ['pdf-to-word', 'merge-pdf', 'compress-pdf'],
+    updatedAt: '2026-11-03',
+    locale: {
+      en: {
+        title: 'Edit PDF Online Free — No Upload, No Signup',
+        h1: 'Edit PDF files in your browser without uploading',
+        metaDescription: 'Edit a PDF online: add text and images, replace existing text, highlight, redact, draw, delete and reorder pages. Free, private, no upload.',
+        answerQuestion: 'How do I edit a PDF for free without uploading it?',
+        shortAnswer: 'Open your PDF, pick a tool such as Add text, Edit text, Highlight, Redact, or Add image, click on the page, then download the edited file. Everything is applied by your browser on your device, so the document never goes to a server and no account is needed.',
+        intro: 'This editor shows every page of your PDF and lets you place text and images, replace a line of existing text, highlight, white-out, or redact areas, draw freehand, delete pages, and change their order. Edits are written into a new PDF locally. Replacing existing text covers the original line in white and writes the new text with a standard font, so exact fonts are not preserved. Redaction flattens the affected page into an image so the hidden text cannot be recovered.',
+        steps: ['Open a PDF from your device.', 'Choose a tool and click or drag on the page.', 'Use the page buttons to reorder or delete pages.', 'Press Download edited PDF.'],
+        benefits: ['Your PDF never leaves your device.', 'Add text, images, highlights, drawings, and redactions.', 'Replace existing text with a few clicks.', 'Delete and reorder pages in the same place.'],
+        useCases: ['Filling in a form or adding a signature image.', 'Fixing a typo or changing a date in a document.', 'Hiding a phone number or ID before sharing a file.'],
+        faq: [
+          { q: 'Is my PDF uploaded anywhere?', a: 'No. The file is read and edited inside your browser. The edited PDF is created locally and downloaded from your device.' },
+          { q: 'Can I change existing text?', a: 'Yes. Use Edit text and click a line. The original line is covered in white and your new text is written on top using a standard font, so it may look slightly different from the original.' },
+          { q: 'Is redaction really permanent?', a: 'Yes. Pages with a redaction are saved as images, so the covered text is removed rather than only hidden. The downside is that those pages are no longer searchable.' },
+          { q: 'Why are some characters shown as question marks?', a: 'The built-in font supports Latin characters. Characters outside that set, such as Chinese or Arabic, are replaced with a question mark.' },
+          { q: 'Can I edit a password-protected PDF?', a: 'No. Remove the password in your PDF reader, save a copy, and open that copy here.' },
+          { q: 'Does it work on a phone?', a: 'Yes, with touch, although a larger screen makes precise placement easier.' },
+        ],
+        tip: 'Use White-out for a quick cover-up and Redact when the hidden content is sensitive.',
+      },
+      id: {
+        title: 'Edit PDF Online Gratis — Tanpa Upload',
+        h1: 'Edit file PDF di browser tanpa upload',
+        metaDescription: 'Edit PDF online: tambah teks dan gambar, ganti teks yang ada, sorot, sensor, gambar, hapus dan urutkan halaman. Gratis, privat, tanpa upload.',
+        answerQuestion: 'Bagaimana cara mengedit PDF gratis tanpa mengunggahnya?',
+        shortAnswer: 'Buka PDF Anda, pilih alat seperti Tambah teks, Edit teks, Sorot, Sensor, atau Tambah gambar, klik pada halaman, lalu unduh file hasil edit. Semua diproses browser di perangkat Anda, sehingga dokumen tidak dikirim ke server dan tidak perlu akun.',
+        intro: 'Editor ini menampilkan setiap halaman PDF dan memungkinkan Anda menempatkan teks dan gambar, mengganti baris teks yang ada, menyorot, menutup putih, atau menyensor area, menggambar bebas, menghapus halaman, serta mengubah urutannya. Hasil edit ditulis ke PDF baru secara lokal. Mengganti teks yang ada menutup baris asli dengan warna putih lalu menulis teks baru dengan font standar, sehingga font asli tidak dipertahankan persis. Sensor meratakan halaman terkait menjadi gambar sehingga teks tersembunyi tidak bisa dipulihkan.',
+        steps: ['Buka PDF dari perangkat Anda.', 'Pilih alat lalu klik atau seret pada halaman.', 'Gunakan tombol halaman untuk mengurutkan atau menghapus halaman.', 'Tekan Unduh PDF hasil edit.'],
+        benefits: ['PDF Anda tidak pernah keluar dari perangkat.', 'Tambah teks, gambar, sorotan, gambar bebas, dan sensor.', 'Ganti teks yang ada hanya dengan beberapa klik.', 'Hapus dan urutkan halaman di tempat yang sama.'],
+        useCases: ['Mengisi formulir atau menambahkan gambar tanda tangan.', 'Memperbaiki salah ketik atau mengubah tanggal pada dokumen.', 'Menyembunyikan nomor telepon atau KTP sebelum berbagi file.'],
+        faq: [
+          { q: 'Apakah PDF saya diunggah ke suatu tempat?', a: 'Tidak. File dibaca dan diedit di dalam browser Anda. PDF hasil edit dibuat secara lokal dan diunduh dari perangkat Anda.' },
+          { q: 'Bisakah mengubah teks yang sudah ada?', a: 'Bisa. Gunakan Edit teks lalu klik sebuah baris. Baris asli ditutup putih dan teks baru ditulis di atasnya dengan font standar, sehingga tampilannya bisa sedikit berbeda dari aslinya.' },
+          { q: 'Apakah sensor benar-benar permanen?', a: 'Ya. Halaman yang disensor disimpan sebagai gambar, sehingga teks yang ditutup benar-benar hilang, bukan hanya disembunyikan. Konsekuensinya, halaman tersebut tidak lagi bisa dicari teksnya.' },
+          { q: 'Mengapa beberapa karakter berubah menjadi tanda tanya?', a: 'Font bawaan mendukung karakter Latin. Karakter di luar itu, seperti Mandarin atau Arab, diganti dengan tanda tanya.' },
+          { q: 'Bisakah mengedit PDF yang diberi kata sandi?', a: 'Tidak. Hapus kata sandi di pembaca PDF, simpan salinannya, lalu buka salinan itu di sini.' },
+          { q: 'Apakah bisa dipakai di ponsel?', a: 'Bisa dengan layar sentuh, meski layar yang lebih besar memudahkan penempatan yang presisi.' },
+        ],
+        tip: 'Gunakan Tutup putih untuk menutup cepat dan Sensor jika isi yang disembunyikan bersifat sensitif.',
+      },
+    },
+  },
+  {
+    id: 'translate-pdf',
+    slug: { en: 'translate-pdf', id: 'terjemahkan-pdf' },
+    category: 'pdf',
+    engine: 'pdf-translate',
+    accept: ['application/pdf', '.pdf'],
+    icon: 'pdf',
+    featured: 6,
+    options: { sourceLang: 'en', targetLang: 'id' },
+    related: ['pdf-to-word', 'edit-pdf', 'merge-pdf'],
+    updatedAt: '2026-11-03',
+    locale: {
+      en: {
+        title: 'Translate PDF Online Free — Private, In-Browser',
+        h1: 'Translate PDF to another language without uploading',
+        metaDescription: 'Translate a PDF to English, Indonesian, Spanish, French, German and more. The model runs in your browser, so your document is never uploaded.',
+        answerQuestion: 'How do I translate a PDF without uploading it?',
+        shortAnswer: 'Add your PDF, choose the source and target language, and press Process. A translation model downloads once and then runs inside your browser, translating the text of every page. You download the result as an editable Word (.docx) file, and the document never leaves your device.',
+        intro: 'Most PDF translators send your document to a server. Toolabs runs an open translation model (Opus-MT) directly in your browser instead. The text of the PDF is extracted, translated paragraph by paragraph, and written into a Word file you can edit and save as PDF. English is the hub language: translating between two non-English languages goes through English, which takes longer and can lower quality. Machine translation is a good draft, not a certified translation, and the layout of the original PDF is not kept.',
+        steps: ['Drop a PDF with selectable text.', 'Choose the source and target language.', 'Press Process files and wait for the model to download on first use.', 'Download the translated Word file.'],
+        benefits: ['The document is never uploaded to a server.', 'No account, no page limit, and no watermark.', 'The result is an editable Word file.', 'The model is cached, so later translations start faster.'],
+        useCases: ['Reading a foreign-language contract, manual, or article.', 'Getting a quick draft translation of a document.', 'Translating a private document you cannot send to an online service.'],
+        faq: [
+          { q: 'Is my PDF uploaded for translation?', a: 'No. The text is extracted and translated by a model that runs in your browser. Only the model files are downloaded, from a public model host, and your document is not sent anywhere.' },
+          { q: 'Why does the first translation take long?', a: 'The model for your language pair has to download first, about 50 to 100 MB. Your browser caches it, so the next translation of that pair starts much faster.' },
+          { q: 'Which languages are supported?', a: 'English, Indonesian, Spanish, French, German, Italian, Russian, Chinese, and Arabic as targets, plus Japanese as a source. Pairs without English are translated through English.' },
+          { q: 'How good is the translation?', a: 'It is a machine translation from a compact model. It is good enough to understand a document, but check names, numbers, and legal terms. It is not a certified translation.' },
+          { q: 'Can it translate a scanned PDF?', a: 'No. A scan is an image with no text to translate, and this tool does not do OCR. Toolabs warns you when it finds no selectable text.' },
+          { q: 'Will the layout be preserved?', a: 'No. The output is a Word file with the translated paragraphs in reading order. Images, tables, and exact positioning from the PDF are not kept.' },
+        ],
+        tip: 'Translating to or from English gives the best quality. Close other heavy tabs for long documents.',
+      },
+      id: {
+        title: 'Terjemahkan PDF Online Gratis — Privat di Browser',
+        h1: 'Terjemahkan PDF ke bahasa lain tanpa upload',
+        metaDescription: 'Terjemahkan PDF ke Inggris, Indonesia, Spanyol, Prancis, Jerman dan lainnya. Model berjalan di browser, dokumen Anda tidak pernah diunggah.',
+        answerQuestion: 'Bagaimana cara menerjemahkan PDF tanpa mengunggahnya?',
+        shortAnswer: 'Tambahkan PDF, pilih bahasa sumber dan tujuan, lalu tekan Proses. Model terjemahan diunduh sekali lalu berjalan di dalam browser, menerjemahkan teks di setiap halaman. Hasilnya berupa file Word (.docx) yang bisa diedit, dan dokumen tidak pernah keluar dari perangkat Anda.',
+        intro: 'Kebanyakan penerjemah PDF mengirim dokumen Anda ke server. Toolabs justru menjalankan model terjemahan terbuka (Opus-MT) langsung di browser. Teks PDF diekstrak, diterjemahkan paragraf demi paragraf, lalu ditulis ke file Word yang bisa Anda edit dan simpan sebagai PDF. Bahasa Inggris menjadi bahasa perantara: terjemahan antara dua bahasa non-Inggris melewati bahasa Inggris, sehingga lebih lama dan kualitasnya bisa turun. Terjemahan mesin cocok sebagai draf, bukan terjemahan tersumpah, dan tata letak PDF asli tidak dipertahankan.',
+        steps: ['Letakkan PDF yang teksnya bisa dipilih.', 'Pilih bahasa sumber dan bahasa tujuan.', 'Tekan Proses file dan tunggu model diunduh saat pertama kali dipakai.', 'Unduh file Word hasil terjemahan.'],
+        benefits: ['Dokumen tidak pernah diunggah ke server.', 'Tanpa akun, tanpa batas halaman, dan tanpa watermark.', 'Hasilnya berupa file Word yang bisa diedit.', 'Model disimpan di cache sehingga terjemahan berikutnya lebih cepat dimulai.'],
+        useCases: ['Membaca kontrak, manual, atau artikel berbahasa asing.', 'Mendapatkan draf terjemahan dokumen dengan cepat.', 'Menerjemahkan dokumen pribadi yang tidak boleh dikirim ke layanan online.'],
+        faq: [
+          { q: 'Apakah PDF saya diunggah untuk diterjemahkan?', a: 'Tidak. Teks diekstrak dan diterjemahkan oleh model yang berjalan di browser Anda. Hanya file model yang diunduh dari penyedia model publik, dan dokumen Anda tidak dikirim ke mana pun.' },
+          { q: 'Mengapa terjemahan pertama lama?', a: 'Model untuk pasangan bahasa Anda harus diunduh dulu, sekitar 50 sampai 100 MB. Browser menyimpannya di cache, jadi terjemahan berikutnya untuk pasangan itu jauh lebih cepat dimulai.' },
+          { q: 'Bahasa apa saja yang didukung?', a: 'Inggris, Indonesia, Spanyol, Prancis, Jerman, Italia, Rusia, Mandarin, dan Arab sebagai tujuan, ditambah Jepang sebagai sumber. Pasangan tanpa bahasa Inggris diterjemahkan lewat bahasa Inggris.' },
+          { q: 'Seberapa bagus terjemahannya?', a: 'Ini terjemahan mesin dari model ringkas. Cukup untuk memahami dokumen, tetapi periksa nama, angka, dan istilah hukum. Ini bukan terjemahan tersumpah.' },
+          { q: 'Bisakah menerjemahkan PDF hasil pindai?', a: 'Tidak. Hasil pindai adalah gambar tanpa teks untuk diterjemahkan, dan tool ini tidak melakukan OCR. Toolabs memberi peringatan jika tidak menemukan teks yang bisa dipilih.' },
+          { q: 'Apakah tata letak dipertahankan?', a: 'Tidak. Hasilnya file Word berisi paragraf terjemahan sesuai urutan baca. Gambar, tabel, dan posisi persis dari PDF tidak dipertahankan.' },
+        ],
+        tip: 'Terjemahan dari atau ke bahasa Inggris memberi kualitas terbaik. Tutup tab berat lain untuk dokumen panjang.',
+      },
+    },
+  },
   {
     id: 'qr-generator',
     slug: { en: 'qr-generator', id: 'generator-qr' },

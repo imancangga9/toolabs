@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Locale } from '../../config';
 import type { EngineId, OutputFormat, ToolOptions } from '../../tools.config';
 import { getUi } from '../../i18n/ui';
+import { LANGUAGES } from '../../engines/translate';
 
 type Props = {
   engine: EngineId;
@@ -66,6 +67,8 @@ export default function OptionsPanel({
     engine !== 'pdf-split' &&
     engine !== 'pdf-rotate' &&
     engine !== 'pdf-merge' &&
+    engine !== 'pdf-to-word' &&
+    engine !== 'pdf-translate' &&
     !(engine === 'image-to-pdf') &&
     !(format === 'image/png' && engine !== 'pdf-to-jpg');
   const isFixedFormat = engine === 'image-convert' || engine === 'heic-convert' || fixedFormat || formatLocked;
@@ -491,6 +494,44 @@ export default function OptionsPanel({
             </select>
             <small>{ui.options.scaleHelp}</small>
           </div>
+        )}
+
+        {engine === 'pdf-translate' && (
+          <>
+            <div className="option">
+              <label htmlFor="opt-source-lang">{locale === 'id' ? 'Dari bahasa' : 'From language'}</label>
+              <select
+                id="opt-source-lang"
+                className="select"
+                value={options.sourceLang ?? 'en'}
+                onChange={(event) => update({ sourceLang: event.target.value })}
+              >
+                {LANGUAGES.map((language) => (
+                  <option key={language.code} value={language.code}>{language[locale]}</option>
+                ))}
+              </select>
+            </div>
+            <div className="option">
+              <label htmlFor="opt-target-lang">{locale === 'id' ? 'Ke bahasa' : 'To language'}</label>
+              <select
+                id="opt-target-lang"
+                className="select"
+                value={options.targetLang ?? 'id'}
+                onChange={(event) => update({ targetLang: event.target.value })}
+              >
+                {LANGUAGES.filter((language) => language.target).map((language) => (
+                  <option key={language.code} value={language.code}>{language[locale]}</option>
+                ))}
+              </select>
+            </div>
+            <div className="option full">
+              <p className="option-note">
+                {locale === 'id'
+                  ? 'Model terjemahan diunduh sekali (sekitar 50–100 MB per pasangan bahasa) lalu disimpan di browser. Terjemahan berjalan di perangkat Anda, jadi dokumen tidak diunggah.'
+                  : 'The translation model downloads once (about 50–100 MB per language pair) and is cached by your browser. Translation runs on your device, so the document is not uploaded.'}
+              </p>
+            </div>
+          </>
         )}
 
         {engine === 'pdf-merge' && (

@@ -19,6 +19,7 @@ const WARNING_KEYS: Record<WarningCode, keyof ReturnType<typeof getUi>['warnings
   'target-unreachable': 'targetUnreachable',
   'heic-first-frame': 'heicFirstFrame',
   'pages-clamped': 'pagesClamped',
+  'no-text': 'noText',
   'qr-logo-large': 'qrLogoLarge',
   'qr-contrast': 'qrContrast',
   'qr-ecc-raised': 'qrEccRaised',
