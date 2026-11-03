@@ -1,5 +1,6 @@
 import type { OutputResult, WarningCode } from './types';
 import { translateTexts, type LangCode } from './translate';
+import { convertPdfToWordLayout } from './pdf-to-word-layout';
 
 const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
@@ -161,6 +162,9 @@ export async function convertPdfToWord(
     onProgress?: (sourceIndex: number, progress: number) => void;
   },
 ): Promise<OutputResult[]> {
+  // Without translation the page layout and images are kept; translated text changes length, so it reflows instead.
+  if (!translation) return convertPdfToWordLayout(files, onProgress, signal);
+
   // Legacy build avoids newer-browser APIs (Promise.try, Map.getOrInsertComputed) that make pdf.js fail on some browsers.
   const pdfjs = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as typeof import('pdfjs-dist');
   const workerUrl = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
